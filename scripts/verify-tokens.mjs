@@ -511,9 +511,12 @@ ok('the tokens report how many colours contrast actually allows on dark',
 // Colour-to-colour contrast is not a substitute either. WCAG contrast is
 // defined between a foreground and its background; two data marks are both
 // foreground against the same canvas, so their mutual ratio does not establish
-// that a reader can tell them apart. Measured across the palette, no
-// five-colour subset reaches even 1.31:1 minimum pairwise, so any threshold
-// here would be arbitrary.
+// that a reader can tell them apart. Exhaustive search makes the point: across
+// all 792 five-colour subsets of the 12 dark-canvas-compliant colours the best
+// achievable minimum pairwise contrast is only about 1.31:1. (Across all 15
+// official colours it is 1.58:1, but that set includes colours that fail 3:1 on
+// the dark canvas, so it is not a usable answer.) Neither number is a threshold
+// — they are evidence that re-picking the palette buys little.
 //
 // Contrast governs mark-vs-canvas. Telling series apart is a hue/chroma
 // judgement plus non-colour encoding. So this only reports the closest pairs
@@ -569,6 +572,64 @@ ok('tokens do not claim a contrast-derived separation guarantee',
   'minSeparation key is absent');
 ok('docs state that close series need non-colour encoding',
   /marker|标记|直接标注|direct label/i.test(read('references/data-visualization.md')));
+
+// Exhaustive worst-case search. The docs quote "about 1.31:1" as the ceiling on
+// what re-picking the palette can buy, and a reviewer already caught one
+// over-claim: an earlier version said no five-colour subset of the *whole
+// palette* reaches 1.31:1, which is false — the best of 3003 is 1.58:1. The
+// figure is only true inside the dark-canvas-compliant pool. These checks pin
+// both numbers and the scope, so the claim cannot drift back.
+const searchSubsets = (pool, k) => {
+  let count = 0;
+  let best = { r: -1, set: [] };
+  const cur = [];
+  const rec = (start) => {
+    if (cur.length === k) {
+      count += 1;
+      let m = Infinity;
+      for (let i = 0; i < k; i++) for (let j = i + 1; j < k; j++) m = Math.min(m, ratio(cur[i], cur[j]));
+      if (m > best.r) best = { r: m, set: [...cur] };
+      return;
+    }
+    for (let i = start; i < pool.length; i++) { cur.push(pool[i]); rec(i + 1); cur.pop(); }
+  };
+  rec(0);
+  return { count, best };
+};
+{
+  const palette = OFFICIAL_PALETTE;
+  const rejected = new Set(Object.keys(tokens.dataViz.darkSeriesRejected));
+  const pool = palette.filter((h) => !rejected.has(h));
+  ok('the dark-canvas-compliant pool is the documented size',
+    pool.length === tokens.dataViz.darkSeries.contrastAllows,
+    `${pool.length} of ${palette.length} colours clear 3:1 on both dark canvases`);
+
+  const inPool = searchSubsets(pool, 5);
+  const inAll = searchSubsets(palette, 5);
+  ok('exhaustive 5-colour search over the dark pool peaks at about 1.31:1',
+    inPool.count === 792 && Math.abs(inPool.best.r - 1.31) < 0.02,
+    `${inPool.count} subsets, best ${inPool.best.r.toFixed(3)}:1 (${inPool.best.set.join(' ')})`);
+  ok('exhaustive search over the full palette peaks higher, at about 1.58:1',
+    inAll.count === 3003 && Math.abs(inAll.best.r - 1.58) < 0.02,
+    `${inAll.count} subsets, best ${inAll.best.r.toFixed(3)}:1 (${inAll.best.set.join(' ')})`);
+
+  const doc = read('references/data-visualization.md');
+  const readme = read('README.md');
+  const note = tokens.dataViz.darkSeries.note;
+  ok('the 1.31 figure is scoped to the dark pool, not the whole palette',
+    /12\s*个深底合规色/.test(doc) && /12 dark-canvas-compliant/.test(note)
+    && /12 个深底合规色/.test(readme),
+    'docs, README and the token note all name the 12-colour pool');
+  ok('no doc claims no five-colour subset of the palette reaches 1.31:1',
+    !/遍历整个色板[^\n]*1\.31/.test(doc)
+    && !/no five-colour subset of the palette reaches/i.test(note)
+    && !/遍历色板[^\n]*1\.31/.test(readme),
+    'the false whole-palette claim is gone');
+  ok('the 1.31 figure is presented as evidence, not a discriminability guarantee',
+    /不构成可辨识性保证/.test(doc) && /不构成可辨识性保证|不是可辨识性保证|仍不是可辨识性保证/.test(readme)
+    && /not a discriminability guarantee/i.test(note),
+    'all three say the number is not a pass/fail threshold');
+}
 
 // CSS and JSON must publish the same series, or a project using the stylesheet
 // silently keeps the old below-threshold colours.

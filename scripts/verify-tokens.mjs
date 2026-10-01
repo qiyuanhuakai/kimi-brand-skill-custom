@@ -613,6 +613,22 @@ const searchSubsets = (pool, k) => {
     inAll.count === 3003 && Math.abs(inAll.best.r - 1.58) < 0.02,
     `${inAll.count} subsets, best ${inAll.best.r.toFixed(3)}:1 (${inAll.best.set.join(' ')})`);
 
+  // The docs dismiss that full-palette winner by naming how many of its five
+  // colours are unusable on a dark canvas. A previous revision said "three",
+  // which was guessed rather than counted: two is right (#002F5B fails both
+  // canvases, #707070 fails the raised one). The third rejected colour,
+  // #121212, is not in the winning set at all. Counted here so the number
+  // cannot drift back to a guess.
+  const unusable = inAll.best.set.filter((h) => DARK.some((c) => ratio(h, c) < NT));
+  ok('the full-palette winner contains exactly two dark-canvas failures',
+    unusable.length === 2 && unusable.join(' ') === '#002F5B #707070',
+    `${unusable.length} unusable: ${unusable.join(' ')}`);
+  ok('the docs quote that count and the offending colours, not a rounded guess',
+    /2 个在深色画布上过不了 3:1 的色——`#002F5B` 和 `#707070`/.test(read('references/data-visualization.md'))
+    && /two colours that fail 3:1 on the dark canvas, #002F5B and #707070/.test(tokens.dataViz.darkSeries.note)
+    && /`#002F5B` 和 `#707070` 两个深底不合规的色/.test(read('README.md')),
+    'doc, token note and README all say two, and name which two');
+
   const doc = read('references/data-visualization.md');
   const readme = read('README.md');
   const note = tokens.dataViz.darkSeries.note;

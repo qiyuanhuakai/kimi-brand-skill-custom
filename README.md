@@ -6,7 +6,7 @@
 
 ## 为什么
 
-官方品牌手册是一份以图片和视频为主的页面：色值能复制，但**"哪个颜色用在哪、白字按钮用什么蓝、图表怎么配色"** 这些真正决定产出的东西散落在图里。这个 Skill 把可执行的部分抽出来，并补上工程落地所需的东西——可访问性实测、语义 token、一键注入脚本。
+官方品牌手册是一份以图片和视频为主的页面：色值能复制，但**哪个颜色用在哪、白字按钮用什么蓝、图表怎么配色**这些真正决定产出的东西散落在图里。这个 Skill 把可执行的部分抽出来，并补上工程落地所需的东西——可访问性实测、语义 token、一键注入脚本。
 
 ## 包含什么
 
@@ -85,7 +85,7 @@ node scripts/verify-tokens.mjs
 
 ## Logo：不附带文件，只给链接
 
-本仓库**不含任何 Logo 文件**。Logo 是 Moonshot AI 的注册资产，条款保留其随时要求移除的权利；放进公开仓库会让整个仓库都暴露在下架风险下。交付物中的 Logo 一律从[官方素材包](https://kimi-file.kimi.ai/prod-chat-kimi/kfs/4/1/2026-08-12/1d9u74p1l51jas5cp5oq0?response-content-disposition=attachment%3Bfilename%3Dkimi-logo-assets.zip)获取后引用。
+本仓库**不含任何 Logo 文件**。Logo 是 Moonshot AI 的注册资产，条款保留其随时要求移除的权利；交付物中的 Logo 一律从[官方素材包](https://kimi-file.kimi.ai/prod-chat-kimi/kfs/4/1/2026-08-12/1d9u74p1l51jas5cp5oq0?response-content-disposition=attachment%3Bfilename%3Dkimi-logo-assets.zip)获取后引用。
 
 使用官方 Logo 即接受 [Logo 使用条款](https://www.kimi.ai/policies/logo-usage-terms)：
 

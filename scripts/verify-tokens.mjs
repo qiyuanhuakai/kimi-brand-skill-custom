@@ -73,8 +73,8 @@ ok('uses only official + documented derived colours', offPalette.length === 0, o
 ok('declares every official colour as a variable',
   OFFICIAL_PALETTE.every((h) => css.includes(h)));
 ok('brand blue is #007CFF', css.includes('--kimi-blue: #007CFF'));
-ok('link colour is brand blue — official values are not substituted',
-  /--kimi-text-link:\s*var\(--kimi-blue\)/.test(css));
+ok('brand blue is still used for fills/emphasis (not removed from the theme)',
+  /--kimi-accent:\s*var\(--kimi-blue\)/.test(css));
 ok('braces are balanced', (css.match(/{/g) || []).length === (css.match(/}/g) || []).length);
 
 // --- 4. real CSS parsing ---
@@ -96,13 +96,56 @@ function stripComments(src) {
 const themeParsed = stripComments(css);
 ok('theme: every block comment is terminated', !themeParsed.unterminated);
 ok('theme: no stray comment terminator left in code', !themeParsed.code.includes('*/'));
+
+// Real recursive CSS parser: walks nested blocks with brace matching, so rules
+// inside @media / @supports are reported too. The previous regex scan only
+// matched selectors at the top level and silently passed a component rule
+// placed inside a media query.
+function parseRules(src) {
+  const out = [];
+  let i = 0, prelude = '';
+  while (i < src.length) {
+    const c = src[i];
+    if (c === '{') {
+      const p = prelude.trim();
+      prelude = '';
+      const atRule = p.startsWith('@');
+      if (!atRule) out.push({ selector: p, depth: 0 });
+      i++;
+      let depth = 1, inner = '';
+      while (i < src.length && depth > 0) {
+        if (src[i] === '{') depth++;
+        else if (src[i] === '}') { depth--; if (depth === 0) { i++; break; } }
+        inner += src[i];
+        i++;
+      }
+      for (const r of parseRules(inner)) out.push({ ...r, depth: r.depth + 1 });
+    } else if (c === ';') {
+      prelude = '';
+      i++;
+    } else {
+      prelude += c;
+      i++;
+    }
+  }
+  return out;
+}
+
+// Self-test: prove the parser catches a rule hidden inside a media query.
+const probe = stripComments(css.replace(
+  /@media \(prefers-color-scheme: dark\)\s*\{\s*\n(\s*):root/,
+  (m, ind) => `@media (prefers-color-scheme: dark) {\n${ind}.probe-leak { color: red; }\n${ind}:root`
+)).code;
+const probeLeaks = parseRules(probe).filter((r) => !r.selector.includes(':root'));
+ok('parser self-test: detects a rule nested inside @media', probeLeaks.length > 0,
+  probeLeaks.length ? probeLeaks.map((r) => r.selector).join(', ') : 'not detected — parser is broken');
+const probeTop = parseRules(probe).filter((r) => r.depth === 0);
+ok('parser self-test: top-level view alone would have missed it', probeTop.every((r) => r.selector.includes(':root')));
 // After stripping comments, only `:root` blocks and @media should remain.
-const themeSelectors = [...themeParsed.code.matchAll(/(^|[};])\s*([^{}@;]+)\{/g)]
-  .map((m) => m[2].trim())
-  .filter((s) => s && !s.startsWith('@'));
-const nonRoot = themeSelectors.filter((s) => !s.includes(':root'));
+const themeSelectors = parseRules(themeParsed.code).filter((s) => !s.atRule);
+const nonRoot = themeSelectors.filter((s) => !s.selector.includes(':root'));
 ok('theme: contains no component rules outside :root', nonRoot.length === 0,
-  nonRoot.slice(0, 5).join(' | ') || `${themeSelectors.length} selector block(s), all :root`);
+  nonRoot.slice(0, 5).map((r) => r.selector).join(' | ') || `${themeSelectors.length} selector block(s), all :root`);
 
 const components = read('assets/kimi-components.css');
 const compParsed = stripComments(components);
@@ -177,6 +220,66 @@ ok('electric cyan is a dark-surface accent only (1.34 on white, 13.94 on ink)',
   ratio('#00F6FF', '#FFFFFF') < AA_NORMAL && ratio('#00F6FF', '#121212') >= AA_NORMAL);
 ok('all four accents on ink pass AAA (dark-surface safety)',
   ['#DFC8F5', '#FFD1D4', '#B3F4A8', '#F4F9A7'].every((c) => ratio(c, '#121212') >= 7));
+
+// Every semantic text/background pair the theme actually ships.
+const SEMANTIC_PAIRS = [
+  ['ink on white (text-primary / surface)', '#121212', '#FFFFFF', true],
+  ['slate on white (text-secondary / surface)', '#707070', '#FFFFFF', true],
+  ['slate on mist (text-secondary / surface-sub)', '#707070', '#E1E3E6', false],
+  ['ink on mist (text-secondary-strong / surface-sub)', '#121212', '#E1E3E6', true],
+  ['deepBlue on white (text-link / surface)', '#002F5B', '#FFFFFF', true],
+  ['deepBlue on mist (text-link / surface-sub)', '#002F5B', '#E1E3E6', true],
+  ['brandBlue on white (accent fill, large text only)', '#007CFF', '#FFFFFF', false],
+  ['ink on brandBlue (on-accent text)', '#121212', '#007CFF', true],
+  ['silver on ink (dark secondary text)', '#C3C3C3', '#121212', true],
+  ['sky on ink (dark link)', '#A0DAF7', '#121212', true],
+];
+for (const [label, fg, bg, shouldPassAA] of SEMANTIC_PAIRS) {
+  const r = ratio(fg, bg);
+  const passes = r >= AA_NORMAL;
+  ok(`${label} = ${r.toFixed(2)}:1 ${passes ? 'AA' : 'below AA'}`,
+    passes === shouldPassAA, passes === shouldPassAA ? '' : `EXPECTED ${shouldPassAA ? 'AA' : 'below AA'}`);
+}
+
+// The theme must not route normal-size text through a below-AA pairing.
+ok('light chart label is ink, so it survives both white and mist canvases',
+  /--kimi-chart-label:\s*var\(--kimi-ink\)/.test(css));
+ok('light link colour is deep blue, not brand blue (3.94 is below AA)',
+  /--kimi-text-link:\s*var\(--kimi-deep-blue\)/.test(css));
+ok('a tinted-surface secondary text token exists',
+  /--kimi-text-secondary-strong:\s*var\(--kimi-ink\)/.test(css));
+
+// Explicit dark theme must live outside the media query, and the two dark
+// blocks must stay in sync.
+function blockBody(src, headerPattern) {
+  const m = src.match(headerPattern);
+  if (!m) return null;
+  const start = src.indexOf('{', m.index);
+  if (start === -1) return null;
+  let depth = 1, i = start + 1;
+  while (i < src.length && depth > 0) {
+    if (src[i] === '{') depth++;
+    else if (src[i] === '}') depth--;
+    i++;
+  }
+  return src.slice(start + 1, i - 1);
+}
+const explicitDarkBody = blockBody(css, /:root\[data-theme="dark"\]\s*\{/);
+ok('explicit :root[data-theme="dark"] block exists', !!explicitDarkBody);
+if (explicitDarkBody) {
+  // The explicit block must not sit inside the media query.
+  const mediaStart = css.indexOf('@media (prefers-color-scheme: dark)');
+  const explicitStart = css.indexOf(':root[data-theme="dark"]');
+  ok('explicit dark block is declared before/outside the media query',
+    mediaStart === -1 || explicitStart < mediaStart,
+    `explicit@${explicitStart} media@${mediaStart}`);
+  const mediaBody = blockBody(css, /:root:not\(\[data-theme="light"\]\)\s*\{/);
+  const norm = (s) => (s || '').split('\n').map((l) => l.trim())
+    .filter((l) => l.startsWith('--')).sort().join('\n');
+  ok('explicit and media dark blocks declare the same variables',
+    !!mediaBody && norm(explicitDarkBody) === norm(mediaBody),
+    mediaBody ? '' : 'media dark block not found');
+}
 
 // --- 5. init-brand argument behaviour ---
 // The previous parser let `--format css` treat "css" as the target directory.

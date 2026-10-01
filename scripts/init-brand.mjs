@@ -219,11 +219,12 @@ if (!written.length && !skipped.length) {
 
 console.log(`
 Next steps
-  1. Load the fonts: Inter (body) + Geist Mono (code/metrics). Sentient is commercial — use a licensed copy or the documented serif fallback.
-  2. Brand colours are used as published — never substitute a different blue. Note that white on a brand-blue fill is 3.94:1, which meets the 3:1 large-text threshold only (24px, or 18.66px at weight 700); the default pairing in kimi-components.css uses ink on blue at 4.75:1 so it passes at any size.
-  3. If small body text must sit on a brand-blue fill, switch the text to ink #121212 (4.75:1) instead of changing the fill.
-  4. Charts: neutral gray base, electric blue for the one metric that matters. Never distort the data.
-  5. Logo: this skill ships no logo file. Download the official asset zip, do not modify, recolor, stretch or add effects, and get written permission (hi@moonshot.ai) before any commercial use.
+  1. Load the fonts: Inter (body) + Geist Mono (code/metrics), both SIL OFL. Sentient (serif) is free for personal AND commercial use under the ITF Free Font License — self-hosting is allowed, but the font files may not be resold or redistributed. Licence: ${tokens.typography.families.serif.licenseUrl}
+  2. Brand colours are used as published — never substitute a different blue. Body links use deep blue #002F5B (13.48:1 on white); brand blue #007CFF is 3.94:1, so keep it for fills, emphasis and large text (24px, or 18.66px at weight 700). The default button pairs ink on brand blue (4.75:1).
+  3. On tinted light surfaces (--kimi-surface-sub / mist, zebra rows, panels) use --kimi-text-secondary-strong, not --kimi-text-secondary: slate drops from 4.95:1 on white to 3.85:1 on mist.
+  4. Explicit theme switching: set data-theme="dark" or data-theme="light" on <html>. The explicit block is outside the media query, so it works regardless of the OS setting.
+  5. Charts: neutral gray base, electric blue for the one metric that matters. Never distort the data. Light and dark chart palettes must be switched as a set.
+  6. Logo: this skill ships no logo file. Download the official asset zip, do not modify, recolor, stretch or add effects, and get written permission (hi@moonshot.ai) before any commercial use.
 
 Official logo assets: ${tokens.logo.officialAssetZip}
 Full spec: ${tokens.source.brandGuidelinesZh}

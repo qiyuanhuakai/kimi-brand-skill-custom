@@ -26,7 +26,7 @@
   --kimi-ink: #121212;             /* dark surfaces, body text */
   --kimi-slate: #707070;           /* secondary text, icons */
   --kimi-graphite: #8D9390;        /* disabled states, neutral chart base */
-  --kimi-silver: #C3C3C3;          /* borders, dividers, skeletons — never text */
+  --kimi-silver: #C3C3C3;          /* borders, dividers, skeletons; text only on dark surfaces */
   --kimi-mist: #E1E3E6;            /* section and card fills, zebra rows */
   --kimi-white: #FFFFFF;
 
@@ -35,18 +35,30 @@
   --kimi-ink-border: #2F2F2E;
   --kimi-ink-raised: #2F2F2E;
 
-  /* ---- Semantic: light theme ---- */
+  /* ---- Semantic: light theme ----
+     Every pair below is checked at 4.5:1 (normal text) against BOTH
+     --kimi-surface (white) and --kimi-surface-sub (mist):
+       ink   on white 18.73:1   on mist 14.57:1
+       slate on white  4.95:1   on mist  3.85:1  <-- fails on mist
+       deep  on white 13.48:1   on mist 10.48:1
+     Slate is therefore scoped to plain white surfaces only. On any tinted
+     light surface use --kimi-text-secondary-strong. */
   --kimi-surface: var(--kimi-white);
   --kimi-surface-sub: var(--kimi-mist);
   --kimi-surface-raised: var(--kimi-white);
   --kimi-border: var(--kimi-silver);
   --kimi-text-primary: var(--kimi-ink);
-  --kimi-text-secondary: var(--kimi-slate);
+  --kimi-text-secondary: var(--kimi-slate);        /* white surfaces only (4.95:1) */
+  --kimi-text-secondary-strong: var(--kimi-ink);   /* for tinted surfaces: mist, zebra rows, panels */
   --kimi-text-disabled: var(--kimi-graphite);
-  --kimi-text-link: var(--kimi-blue);      /* 品牌蓝直用，链接与强调色 */
+  /* Links are deep blue: brand blue on white is 3.94:1, which is below the
+     4.5:1 needed for normal-size text. Deep blue is an official palette
+     member, not a modified brand colour. Brand blue stays the accent/fill
+     colour and is fine for emphasis at large text sizes. */
+  --kimi-text-link: var(--kimi-deep-blue);
   --kimi-accent: var(--kimi-blue);
   --kimi-accent-text: var(--kimi-white);
-  --kimi-on-accent: var(--kimi-ink);        /* 蓝底小字号正文时改用深色文字，不改底色 */
+  --kimi-on-accent: var(--kimi-ink);        /* 蓝底正文：深色文字 4.75:1，任何字号合规 */
   --kimi-focus-ring: var(--kimi-blue);
 
   /* ---- Semantic: dark theme ---- */
@@ -96,9 +108,39 @@
   --kimi-chart-surface-alt: var(--kimi-mist);
   --kimi-chart-grid: var(--kimi-silver);
   --kimi-chart-axis: var(--kimi-graphite);
-  --kimi-chart-label: var(--kimi-slate);
+  --kimi-chart-label: var(--kimi-ink);   /* safe on both white (18.73) and mist (14.57) */
   --kimi-chart-series-primary: var(--kimi-blue);
   --kimi-chart-series-focus: var(--kimi-deep-blue);
+  --kimi-chart-series-deep: var(--kimi-azure);
+  --kimi-chart-series-neutral: var(--kimi-graphite);
+}
+
+/* Explicit theme override. This block is NOT inside a media query, so
+   data-theme="dark" works on a machine whose OS is set to light, and
+   data-theme="light" wins inside the dark media query below.
+   The two dark blocks are kept byte-identical on purpose — verify-tokens.mjs
+   asserts that, so they cannot drift. */
+:root[data-theme="dark"] {
+  --kimi-surface: var(--kimi-ink);
+  --kimi-surface-sub: var(--kimi-ink-raised);
+  --kimi-surface-raised: var(--kimi-ink-raised);
+  --kimi-border: var(--kimi-ink-border);
+  --kimi-text-primary: var(--kimi-white);
+  --kimi-text-secondary: var(--kimi-silver);
+  --kimi-text-secondary-strong: var(--kimi-silver);
+  --kimi-text-link: var(--kimi-sky);
+
+  /* Dark-surface chart palette.
+     Labels move to silver (10.63:1 on ink). Slate would be 3.78:1 here,
+     and only 2.71:1 on the raised surface — too weak for axis text.
+     Cyan is safe on dark (13.94:1) and is the correct focus colour. */
+  --kimi-chart-surface: var(--kimi-ink);
+  --kimi-chart-surface-alt: var(--kimi-ink-raised);
+  --kimi-chart-grid: var(--kimi-ink-border);
+  --kimi-chart-axis: var(--kimi-silver);
+  --kimi-chart-label: var(--kimi-silver);
+  --kimi-chart-series-primary: var(--kimi-blue);
+  --kimi-chart-series-focus: var(--kimi-electric-cyan);
   --kimi-chart-series-deep: var(--kimi-azure);
   --kimi-chart-series-neutral: var(--kimi-graphite);
 }
@@ -111,12 +153,8 @@
     --kimi-border: var(--kimi-ink-border);
     --kimi-text-primary: var(--kimi-white);
     --kimi-text-secondary: var(--kimi-silver);
+    --kimi-text-secondary-strong: var(--kimi-silver);
     --kimi-text-link: var(--kimi-sky);
-
-    /* Dark-surface chart palette.
-       Labels move to silver (10.63:1 on ink). Slate would be 3.78:1 here,
-       and only 2.71:1 on the raised surface — too weak for axis text.
-       Cyan is safe on dark (13.94:1) and is the correct focus colour. */
     --kimi-chart-surface: var(--kimi-ink);
     --kimi-chart-surface-alt: var(--kimi-ink-raised);
     --kimi-chart-grid: var(--kimi-ink-border);

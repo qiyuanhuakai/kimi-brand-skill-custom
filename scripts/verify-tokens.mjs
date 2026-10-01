@@ -492,28 +492,83 @@ ok('the tokens state the non-text threshold explicitly',
   tokens.dataViz.nonTextThreshold === NT);
 
 // The dark cap is a design recommendation, not a contrast limit — the claim
-// must not be over-stated, and the published set must still be separable.
+// must not be over-stated.
 ok('the tokens admit the dark cap is a design choice, not a contrast limit',
   /not contrast|restraint/i.test(tokens.dataViz.darkSeries.basis),
   tokens.dataViz.darkSeries.basis);
 ok('the tokens report how many colours contrast actually allows on dark',
   tokens.dataViz.darkSeries.contrastAllows > tokens.dataViz.darkSeries.max,
   `allows ${tokens.dataViz.darkSeries.contrastAllows}, recommends ${tokens.dataViz.darkSeries.max}`);
+// Deliberately NO separability threshold here, and the reason matters.
+//
+// An earlier version of this file compared the difference between each series'
+// contrast-to-background ratio and its neighbour's. That number means nothing:
+// the array was not sorted, "adjacent" was arbitrary, and the difference of two
+// ratios to the same background is not a measure of anything. It reported a
+// healthy 4.64 while the real closest pair in the same set is #00F6FF vs
+// #A0DAF7 at 1.13:1.
+//
+// Colour-to-colour contrast is not a substitute either. WCAG contrast is
+// defined between a foreground and its background; two data marks are both
+// foreground against the same canvas, so their mutual ratio does not establish
+// that a reader can tell them apart. Measured across the palette, no
+// five-colour subset reaches even 1.31:1 minimum pairwise, so any threshold
+// here would be arbitrary.
+//
+// Contrast governs mark-vs-canvas. Telling series apart is a hue/chroma
+// judgement plus non-colour encoding. So this only reports the closest pairs
+// for the designer's benefit — it never gates.
+const reportClosePairs = (set, canvas) => {
+  const pairs = [];
+  for (let i = 0; i < set.length; i++) {
+    for (let j = i + 1; j < set.length; j++) {
+      pairs.push({ a: set[i], b: set[j], r: ratio(set[i], set[j]) });
+    }
+  }
+  pairs.sort((x, y) => x.r - y.r);
+  return pairs.slice(0, 2);
+};
 {
-  const lums = tokens.dataViz.darkSeries.order.map((h) => ratio(h, '#121212'));
-  const gaps = lums.slice(1).map((v, i) => Math.abs(v - lums[i]));
-  const min = Math.min(...gaps);
-  ok(`published dark series stay separable on ink (min gap ${min.toFixed(2)}:1)`,
-    min >= (tokens.dataViz.darkSeries.minSeparation ?? 1.0),
-    gaps.map((g) => g.toFixed(2)).join(', '));
+  const close = reportClosePairs(tokens.dataViz.darkSeries.order, '#121212');
+  console.log(`  [info] closest dark series pairs: ${close.map((p) => `${p.a}/${p.b} ${p.r.toFixed(2)}:1`).join(', ')}`);
+  const declared = tokens.dataViz.darkSeries.closestPairs || [];
+  const all = [];
+  for (let i = 0; i < tokens.dataViz.darkSeries.order.length; i++) {
+    for (let j = i + 1; j < tokens.dataViz.darkSeries.order.length; j++) {
+      all.push([tokens.dataViz.darkSeries.order[i], tokens.dataViz.darkSeries.order[j]]);
+    }
+  }
+  const computed = all.map(([a, b]) => [a, b, ratio(a, b)]).sort((x, y) => x[2] - y[2]).slice(0, declared.length);
+  ok('declared dark closestPairs match the measured values',
+    declared.length === computed.length && computed.every(([a, b, r], idx) => {
+      const d = declared[idx];
+      const samePair = (d.a === a && d.b === b) || (d.a === b && d.b === a);
+      return samePair && Math.abs(d.mutualContrast - r) < 0.02;
+    }), computed.map(([a, b, r]) => `${a}/${b}=${r.toFixed(2)}`).join(', '));
 }
 {
-  const lums = tokens.dataViz.lightSeries.order.map((h) => ratio(h, '#FFFFFF'));
-  const gaps = lums.slice(1).map((v, i) => Math.abs(v - lums[i]));
-  const min = Math.min(...gaps);
-  ok(`published light series stay separable on white (min gap ${min.toFixed(2)}:1)`, min >= 1.0,
-    gaps.map((g) => g.toFixed(2)).join(', '));
+  const close = reportClosePairs(tokens.dataViz.lightSeries.order, '#FFFFFF');
+  console.log(`  [info] closest light series pairs: ${close.map((p) => `${p.a}/${p.b} ${p.r.toFixed(2)}:1`).join(', ')}`);
+  const declared = tokens.dataViz.lightSeries.closestPairs || [];
+  const all = [];
+  for (let i = 0; i < tokens.dataViz.lightSeries.order.length; i++) {
+    for (let j = i + 1; j < tokens.dataViz.lightSeries.order.length; j++) {
+      all.push([tokens.dataViz.lightSeries.order[i], tokens.dataViz.lightSeries.order[j]]);
+    }
+  }
+  const computed = all.map(([a, b]) => [a, b, ratio(a, b)]).sort((x, y) => x[2] - y[2]).slice(0, declared.length);
+  ok('declared light closestPairs match the measured values',
+    declared.length === computed.length && computed.every(([a, b, r], idx) => {
+      const d = declared[idx];
+      const samePair = (d.a === a && d.b === b) || (d.a === b && d.b === a);
+      return samePair && Math.abs(d.mutualContrast - r) < 0.02;
+    }), computed.map(([a, b, r]) => `${a}/${b}=${r.toFixed(2)}`).join(', '));
 }
+ok('tokens do not claim a contrast-derived separation guarantee',
+  tokens.dataViz.darkSeries.minSeparation === undefined,
+  'minSeparation key is absent');
+ok('docs state that close series need non-colour encoding',
+  /marker|标记|直接标注|direct label/i.test(read('references/data-visualization.md')));
 
 // CSS and JSON must publish the same series, or a project using the stylesheet
 // silently keeps the old below-threshold colours.

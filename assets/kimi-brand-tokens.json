@@ -148,7 +148,11 @@
       "max": 4,
       "basis": "hard contrast limit",
       "order": ["#002F5B", "#007CFF", "#707070", "#121212"],
-      "note": "Only these four of the 15 official colours clear 3:1 on white AND on the mist alt-canvas. On a light canvas the number is set by contrast, not taste."
+      "closestPairs": [
+        { "a": "#007CFF", "b": "#707070", "mutualContrast": 1.26 },
+        { "a": "#002F5B", "b": "#121212", "mutualContrast": 1.39 }
+      ],
+      "note": "Only these four of the 15 official colours clear 3:1 on white AND on the mist alt-canvas. On a light canvas the number is set by contrast, not taste. Note that this is a mark-versus-canvas result only: #007CFF and #707070 are just 1.26:1 against each other, so do not rely on colour alone to separate them."
     },
     "lightSeriesRejected": {
       "#8D9390": "3.13 on white but 2.43 on mist — usable on a plain white canvas only",
@@ -167,8 +171,12 @@
       "basis": "restraint and discriminability, NOT contrast",
       "order": ["#00F6FF", "#007CFF", "#A0DAF7", "#8D9390", "#C3C3C3"],
       "contrastAllows": 12,
-      "note": "12 of the 15 official colours clear 3:1 on ink AND on the raised surface, so contrast alone does not cap the count. Five is a design recommendation: among those 12, several sit within about 1.2:1 of each other in luminance on ink (for example #A0DAF7 vs #DFC8F5 at 0.13 apart, #B3F4A8 vs #E1E3E6 at 0.08), so a larger set cannot be told apart reliably. Pick series that stay distinguishable rather than merely visible.",
-      "minSeparation": 1.0
+      "note": "12 of the 15 official colours clear 3:1 on ink AND on the raised surface, so contrast alone does not cap the count. Five is a design recommendation about how many series a reader can track at once. It is NOT a contrast result: the closest pair in this set, #00F6FF vs #A0DAF7, is only 1.13:1 against each other, and no five-colour subset of the palette reaches 1.31:1. Two series this close are not reliably told apart by colour, so pair them with a distinct marker shape, a direct label, or a separator — see references/data-visualization.md.",
+      "closestPairs": [
+        { "a": "#00F6FF", "b": "#A0DAF7", "mutualContrast": 1.13 },
+        { "a": "#A0DAF7", "b": "#C3C3C3", "mutualContrast": 1.16 }
+      ],
+      "requireNonColourEncoding": true
     },
     "darkSeriesRejected": {
       "#002F5B": "1.39 on ink / 1.01 on raised — invisible on dark",

@@ -362,8 +362,89 @@ try {
   fs.rmSync(tmpRoot, { recursive: true, force: true });
 }
 
-// --- 6. no brand asset shipped ---
-console.log('\n6. brand assets stay link-only');
+// --- 6. generated Tailwind config must not shadow Tailwind defaults ---
+// Emitting bare keys like spacing "4" or fontFamily.sans rewrites existing
+// utilities: p-4 silently went from 1rem to 4px. Everything must be namespaced.
+console.log('\n6. generated Tailwind config');
+const twRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'kimi-tw-'));
+try {
+  spawnSync(process.execPath, [INIT, twRoot, '--format', 'tailwind'], { encoding: 'utf8' });
+  const twPath = path.join(twRoot, 'tailwind.kimi-brand.js');
+  const twSrc = fs.existsSync(twPath) ? fs.readFileSync(twPath, 'utf8') : '';
+  const twCfg = twSrc ? (spawnSync(process.execPath, ['-e', `console.log(JSON.stringify(require(${JSON.stringify(twPath)})))`], { encoding: 'utf8' }).stdout || '').trim() : '';
+  const cfg = twCfg ? JSON.parse(twCfg) : null;
+  ok('tailwind config is generated and loads', !!cfg && !!cfg.theme?.extend);
+  if (cfg) {
+    const ext = cfg.theme.extend;
+    // Default keys Tailwind already defines under these scales.
+    const TAILWIND_DEFAULT_SPACING = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '16', '20', '24', '32', '40', '48', '64', '72', '80', '96'];
+    const TAILWIND_DEFAULT_FONT = ['sans', 'serif', 'mono'];
+    const TAILWIND_DEFAULT_RADIUS = ['none', 'sm', 'DEFAULT', 'md', 'lg', 'xl', '2xl', '3xl', 'full'];
+
+    const spacingKeys = Object.keys(ext.spacing || {});
+    const clashingSpacing = spacingKeys.filter((k) => TAILWIND_DEFAULT_SPACING.includes(k));
+    ok('spacing does not redefine bare Tailwind numeric keys', clashingSpacing.length === 0,
+      clashingSpacing.join(', ') || `keys: ${spacingKeys.slice(0, 6).join(',')}…`);
+    ok('spacing is namespaced under "kimi"', !!(ext.spacing?.kimi),
+      `top-level keys: ${spacingKeys.join(',') || 'none'}`);
+
+    const fontKeys = Object.keys(ext.fontFamily || {});
+    const clashingFont = fontKeys.filter((k) => TAILWIND_DEFAULT_FONT.includes(k));
+    ok('fontFamily does not redefine Tailwind sans/serif/mono', clashingFont.length === 0,
+      clashingFont.join(', ') || `keys: ${fontKeys.join(',') || 'none'}`);
+    ok('fontFamily is namespaced under "kimi"', !!(ext.fontFamily?.kimi));
+
+    const radiusKeys = Object.keys(ext.borderRadius || {});
+    const clashingRadius = radiusKeys.filter((k) => TAILWIND_DEFAULT_RADIUS.includes(k));
+    ok('borderRadius does not redefine Tailwind radius keys', clashingRadius.length === 0,
+      clashingRadius.join(', ') || `keys: ${radiusKeys.join(',') || 'none'}`);
+    ok('borderRadius is namespaced under "kimi"', !!(ext.borderRadius?.kimi));
+
+    // Every namespace must actually be reachable, not just present.
+    ok('kimi spacing namespace carries the brand scale',
+      Object.keys(ext.spacing?.kimi || {}).length >= 8, `${Object.keys(ext.spacing?.kimi || {}).length} steps`);
+    ok('the emitted config documents why it namespaces', /namespacing|Namespacing/i.test(twSrc));
+  }
+} finally {
+  fs.rmSync(twRoot, { recursive: true, force: true });
+}
+
+// Non-text contrast (WCAG 1.4.11): a series that is the only cue for its
+// value must clear 3:1 against the canvas it sits on. Checked against BOTH
+// the primary and the alt canvas of each theme.
+const NT = 3.0;
+const LIGHT = [tokens.dataViz.surface, tokens.dataViz.surfaceAlt];
+const DARK = [tokens.dataViz.darkSurface.surface, tokens.dataViz.darkSurface.surfaceAlt];
+for (const hex of tokens.dataViz.lightSeries.order) {
+  const ratios = LIGHT.map((c) => ratio(hex, c));
+  ok(`light series ${hex} clears 3:1 on white and mist`,
+    ratios.every((r) => r >= NT), ratios.map((r) => r.toFixed(2)).join(' / '));
+}
+for (const hex of tokens.dataViz.darkSeries.order) {
+  const ratios = DARK.map((c) => ratio(hex, c));
+  ok(`dark series ${hex} clears 3:1 on ink and raised dark`,
+    ratios.every((r) => r >= NT), ratios.map((r) => r.toFixed(2)).join(' / '));
+}
+ok('the documented light series count matches the measured pool',
+  tokens.dataViz.lightSeries.max === tokens.dataViz.lightSeries.order.length
+  && tokens.dataViz.lightSeries.max <= 4);
+// A colour is "rejected" if it fails on AT LEAST ONE canvas of that theme.
+ok('every light-rejected colour is below 3:1 on at least one light canvas',
+  Object.keys(tokens.dataViz.lightSeriesRejected)
+    .filter((h) => /^#[0-9A-F]{6}$/i.test(h))
+    .every((h) => LIGHT.some((c) => ratio(h.toUpperCase(), c) < NT)));
+ok('every dark-rejected colour is below 3:1 on at least one dark canvas',
+  Object.keys(tokens.dataViz.darkSeriesRejected)
+    .filter((h) => /^#[0-9A-F]{6}$/i.test(h))
+    .every((h) => DARK.some((c) => ratio(h.toUpperCase(), c) < NT)));
+ok('no rejected colour is actually usable (guards against a stale list)',
+  Object.keys(tokens.dataViz.lightSeriesRejected)
+    .filter((h) => /^#[0-9A-F]{6}$/i.test(h) && !LIGHT.some((c) => ratio(h.toUpperCase(), c) < NT)).length === 0);
+ok('the tokens state the non-text threshold explicitly',
+  tokens.dataViz.nonTextThreshold === NT);
+
+// --- 7. no brand asset shipped ---
+console.log('\n7. brand assets stay link-only');
 const assetsDir = path.join(ROOT, 'assets');
 const shipped = fs.readdirSync(assetsDir);
 const brandFiles = shipped.filter((f) => /\.(svg|png|jpe?g|webp|zip)$/i.test(f));
@@ -374,8 +455,8 @@ ok('logo asset delivery is documented as link-only',
 ok('official logo zip URL is recorded', typeof tokens.logo.officialAssetZip === 'string'
   && tokens.logo.officialAssetZip.startsWith('https://'));
 
-// --- 7. naming consistency ---
-console.log('\n7. naming consistency');
+// --- 8. naming consistency ---
+console.log('\n8. naming consistency');
 const skill = read('SKILL.md');
 const nameMatch = skill.match(/^---\r?\n([\s\S]*?)\r?\n---/);
 ok('SKILL.md has YAML frontmatter', !!nameMatch);

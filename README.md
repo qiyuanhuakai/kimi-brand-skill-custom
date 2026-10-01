@@ -35,13 +35,13 @@ scripts/
 # 注入 CSS 变量与组件到你的项目
 node scripts/init-brand.mjs ./my-site --format css
 
-# 生成 Tailwind 配置
+# 生成 Tailwind 配置（kimi-* 命名空间，不覆盖 Tailwind 默认值）
 node scripts/init-brand.mjs ./my-app --format tailwind
 
 # 全部生成（css + tailwind + json），默认不覆盖已有文件
 node scripts/init-brand.mjs ./my-project --format all
 
-# 自检（76 项检查）
+# 自检（99 项检查）
 node scripts/verify-tokens.mjs
 ```
 
@@ -71,9 +71,13 @@ node scripts/verify-tokens.mjs
 | 深底图表焦点 / 轴标签 | `#00F6FF`（13.94:1）/ `#C3C3C3` |
 | `#C3C3C3` 承载文字 | 浅底禁止（1.76:1），**深底正是正确用法** |
 
+**数据系列还要过 3:1 非文本对比度**（WCAG 1.4.11，对画布）。实测官方色板后：浅色画布只有 4 个色够用（`#002F5B` `#007CFF` `#707070` `#121212`），深色画布 5 个。官方那些浅色（`#A0DAF7` 1.51、`#00A1FF` 2.78、四个点缀色 1.11–1.53）在白底上都达不到 3:1，**不能直接当系列色**。系列超限时用非颜色编码（直接标注、标记形状、小多图），或给低对比填充加 1–2px 合规描边。
+
 **先看背景，再选文字色。** 同一个颜色在白底合规、在浅灰底就不合规——自检会逐对校验实际发布的语义配色，而不是只测白底。
 
 浅底与深底图表是两套配色，画布、网格、轴标签、焦点色必须成套切换。主题可通过 `<html data-theme="dark">` 显式切换，该块不在媒体查询内，在浅色系统上同样生效。
+
+**Tailwind 配置全部放在 `kimi` 命名空间下**（`p-kimi-4`、`font-kimi-sans`、`rounded-kimi-card`），不覆盖 Tailwind 自带的 `spacing`/`fontFamily`/`borderRadius` 默认值——否则注入品牌配置会把现有页面的 `p-4` 从 `1rem` 悄悄改成 `4px`。
 
 **字体三元组**：Inter（正文/UI，SIL OFL）· Geist Mono（代码/指标，SIL OFL）· Sentient（引文，**ITF FFL，个人与商业均免费**，可自托管但不可转售字体文件）。
 

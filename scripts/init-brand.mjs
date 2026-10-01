@@ -182,16 +182,27 @@ module.exports = {
           'ink-raised': '${c.derived.inkRaised.value}'
         }
       },
+      /* Everything is nested under a "kimi" key on purpose.
+         Tailwind ships its own defaults for spacing (0-96), fontFamily
+         (sans/serif/mono) and borderRadius. Extending those bare keys
+         silently rewrites existing utilities: p-4 would go from 1rem to 4px
+         and font-sans would change the default stack for every page.
+         Namespacing makes the classes explicit (p-kimi-4, font-kimi-sans)
+         and leaves the defaults untouched. */
       fontFamily: {
-        sans: ['Inter', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'system-ui', 'sans-serif'],
-        mono: ['Geist Mono', 'SF Mono', 'Cascadia Code', 'Consolas', 'monospace'],
-        serif: ['Sentient', 'Noto Serif SC', 'Source Han Serif SC', 'Lora', 'Georgia', 'serif']
+        kimi: {
+          sans: ['Inter', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'system-ui', 'sans-serif'],
+          mono: ['Geist Mono', 'SF Mono', 'Cascadia Code', 'Consolas', 'monospace'],
+          serif: ['Sentient', 'Noto Serif SC', 'Source Han Serif SC', 'Lora', 'Georgia', 'serif']
+        }
       },
-      spacing: ${JSON.stringify(spacing, null, 8).replace(/\n/g, '\n      ')},
+      spacing: { kimi: ${JSON.stringify(spacing, null, 10).replace(/\n/g, '\n        ')} },
       borderRadius: {
-        control: '${tokens.radius.control}px',
-        card: '${tokens.radius.card}px',
-        container: '${tokens.radius.container}px'
+        kimi: {
+          control: '${tokens.radius.control}px',
+          card: '${tokens.radius.card}px',
+          container: '${tokens.radius.container}px'
+        }
       }
     }
   }

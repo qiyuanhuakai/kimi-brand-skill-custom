@@ -142,6 +142,35 @@
   },
 
   "dataViz": {
+    "nonTextThreshold": 3.0,
+    "nonTextNote": "WCAG 1.4.11 — a chart series that is the only cue for its value needs 3:1 against the canvas. Measured against BOTH the primary and the alt canvas of each theme.",
+    "lightSeries": {
+      "max": 4,
+      "order": ["#002F5B", "#007CFF", "#707070", "#121212"],
+      "note": "Only these four clear 3:1 on white AND on the mist alt-canvas. The light palette simply cannot carry more series; go past four with non-colour encoding (direct labels, markers, small multiples), not more colours."
+    },
+    "lightSeriesRejected": {
+      "#8D9390": "3.13 on white but 2.43 on mist — usable on a plain white canvas only",
+      "#00A1FF": "2.78 white / 2.17 mist",
+      "#A0DAF7": "1.51 white / 1.18 mist",
+      "#00F6FF": "1.34 white — dark canvas only",
+      "#C3C3C3": "1.76 white — borders and gridlines only",
+      "#DFC8F5": "1.53 white",
+      "#FFD1D4": "1.37 white",
+      "#B3F4A8": "1.28 white",
+      "#F4F9A7": "1.11 white"
+    },
+    "lowContrastEscapeHatch": "A fill below 3:1 may still be used for a large area (where the shape is not the only cue) or when paired with a 1-2px outline in a colour that does clear 3:1. The outline becomes the discriminating edge.",
+    "darkSeries": {
+      "max": 5,
+      "order": ["#00F6FF", "#007CFF", "#A0DAF7", "#8D9390", "#C3C3C3"],
+      "note": "Dark canvases are far more forgiving: every colour above 3:1 on both ink and the raised surface except deep blue."
+    },
+    "darkSeriesRejected": {
+      "#002F5B": "1.39 on ink / 1.01 on raised — invisible on dark",
+      "#121212": "1.40 on the raised surface — the canvas itself",
+      "#707070": "2.71 on the raised surface"
+    },
     "surface": "#FFFFFF",
     "surfaceAlt": "#E1E3E6",
     "gridLine": "#C3C3C3",
@@ -151,13 +180,13 @@
     "series": {
       "primary": "#007CFF",
       "focus": "#002F5B",
-      "deep": "#00A1FF",
-      "azure": "#A0DAF7",
-      "neutral": "#8D9390"
+      "neutral": "#707070",
+      "deep": "#121212"
     },
     "focusNote": "Deep blue, not electric cyan: cyan is only 1.34:1 on a white surface. Axis labels are ink, not slate: slate is 3.85:1 on the mist alt-canvas.",
-    "maxSeries": 5,
+    "maxSeries": 4,
     "sequentialRamp": ["#E1E3E6", "#A0DAF7", "#007CFF", "#002F5B"],
+    "sequentialRampNote": "A sequential ramp is an exception to the 3:1 series rule: it is read as a gradient, not as discrete series, and each step is labelled. The light end still needs a visible boundary against the canvas.",
     "divergingRamp": ["#002F5B", "#E1E3E6", "#007CFF"],
     "darkSurface": {
       "surface": "#121212",
@@ -169,15 +198,15 @@
       "series": {
         "primary": "#007CFF",
         "focus": "#00F6FF",
-        "deep": "#00A1FF",
+        "neutral": "#8D9390",
         "azure": "#A0DAF7",
-        "neutral": "#8D9390"
+        "silver": "#C3C3C3"
       }
     },
     "darkFocusNote": "Cyan is safe on ink (13.94:1) and is the correct dark-surface focus colour. Axis labels must be #C3C3C3: #707070 would be 3.78:1 on ink and only 2.71:1 on the raised surface.",
     "principles": [
       "Minimalism and reduction; the chart must first and foremost accurately convey the data.",
-      "Neutral gray base with precise electric-blue highlight to direct attention to core metrics.",
+      "A series that is the only cue for its value must clear 3:1 against its canvas (WCAG 1.4.11). Light canvases support four such colours; dark canvases support five.",
       "Never truncate or distort an axis in a way that misleads.",
       "No 3D charts, no dual Y axes, no pie charts with more than 5 slices.",
       "Numeric labels use Geist Mono with tabular-nums."

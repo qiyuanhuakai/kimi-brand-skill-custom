@@ -385,25 +385,73 @@ try {
     const clashingSpacing = spacingKeys.filter((k) => TAILWIND_DEFAULT_SPACING.includes(k));
     ok('spacing does not redefine bare Tailwind numeric keys', clashingSpacing.length === 0,
       clashingSpacing.join(', ') || `keys: ${spacingKeys.slice(0, 6).join(',')}…`);
-    ok('spacing is namespaced under "kimi"', !!(ext.spacing?.kimi),
-      `top-level keys: ${spacingKeys.join(',') || 'none'}`);
+    ok('spacing is flat and prefixed (no bare numeric keys)', spacingKeys.length > 0
+      && spacingKeys.every((k) => k.startsWith('kimi-')),
+      `keys: ${spacingKeys.slice(0, 3).join(',')}…`);
+
+    // These scales are NOT nested-capable: theme.extend.spacing.kimi.4 emits no
+    // class at all (verified against tailwindcss 3.4.17), while a flat
+    // "kimi-4" emits p-kimi-4. Every value must be a flat, prefixed key.
+    for (const [nm, scale] of [['spacing', ext.spacing], ['fontFamily', ext.fontFamily], ['borderRadius', ext.borderRadius]]) {
+      const keys = Object.keys(scale || {});
+      const nested = keys.filter((k) => scale[k] && typeof scale[k] === 'object' && !Array.isArray(scale[k]));
+      ok(`${nm}: all keys are flat values, not nested objects`, keys.length > 0 && nested.length === 0,
+        nested.join(', ') || `${keys.length} flat keys`);
+      const unprefixed = keys.filter((k) => !k.startsWith('kimi-'));
+      ok(`${nm}: every key is prefixed kimi-`, keys.length > 0 && unprefixed.length === 0,
+        unprefixed.join(', ') || 'all prefixed');
+    }
 
     const fontKeys = Object.keys(ext.fontFamily || {});
     const clashingFont = fontKeys.filter((k) => TAILWIND_DEFAULT_FONT.includes(k));
     ok('fontFamily does not redefine Tailwind sans/serif/mono', clashingFont.length === 0,
       clashingFont.join(', ') || `keys: ${fontKeys.join(',') || 'none'}`);
-    ok('fontFamily is namespaced under "kimi"', !!(ext.fontFamily?.kimi));
 
     const radiusKeys = Object.keys(ext.borderRadius || {});
     const clashingRadius = radiusKeys.filter((k) => TAILWIND_DEFAULT_RADIUS.includes(k));
     ok('borderRadius does not redefine Tailwind radius keys', clashingRadius.length === 0,
       clashingRadius.join(', ') || `keys: ${radiusKeys.join(',') || 'none'}`);
-    ok('borderRadius is namespaced under "kimi"', !!(ext.borderRadius?.kimi));
 
-    // Every namespace must actually be reachable, not just present.
-    ok('kimi spacing namespace carries the brand scale',
-      Object.keys(ext.spacing?.kimi || {}).length >= 8, `${Object.keys(ext.spacing?.kimi || {}).length} steps`);
-    ok('the emitted config documents why it namespaces', /namespacing|Namespacing/i.test(twSrc));
+    ok('kimi spacing scale carries the brand steps',
+      Object.keys(ext.spacing || {}).length >= 8, `${Object.keys(ext.spacing || {}).length} steps`);
+    ok('the emitted config explains the flat-prefix rule', /namespac|prefix|flat/i.test(twSrc));
+
+    // Real compile when tailwindcss is resolvable here. The structural checks
+    // above run either way; this proves the classes actually generate and that
+    // Tailwind's own defaults survive injection.
+    let twResolvable = false;
+    try {
+      twResolvable = spawnSync(process.execPath, ['-e', 'require.resolve("tailwindcss")'],
+        { encoding: 'utf8' }).status === 0;
+    } catch { twResolvable = false; }
+
+    if (twResolvable) {
+      const marker = '<div class="p-kimi-4 gap-kimi-8 font-kimi-sans rounded-kimi-card p-4 gap-8"></div>';
+      const cfgFile = path.join(twRoot, 'tw.compile.js');
+      const cssFile = path.join(twRoot, 'tw.out.css');
+      fs.writeFileSync(cfgFile, 'module.exports = ' + JSON.stringify({ ...cfg, content: [{ raw: marker, extension: 'html' }] }) + ';');
+      const runner = 'const postcss=require("postcss"),tw=require("tailwindcss"),fs=require("fs");'
+        + 'postcss([tw(' + JSON.stringify(cfgFile) + ')]).process("@tailwind utilities;",{from:undefined})'
+        + '.then(x=>fs.writeFileSync(' + JSON.stringify(cssFile) + ',x.css)).catch(e=>{console.error(e.message);process.exit(1)});';
+      const run = spawnSync(process.execPath, ['-e', runner], { encoding: 'utf8' });
+      const out = fs.existsSync(cssFile) ? fs.readFileSync(cssFile, 'utf8') : '';
+      for (const cls of ['p-kimi-4', 'gap-kimi-8', 'font-kimi-sans', 'rounded-kimi-card']) {
+        ok(`tailwind really generates .${cls}`, out.includes('.' + cls),
+          run.stderr ? run.stderr.slice(0, 90) : '');
+      }
+      // Note: Tailwind omits the semicolon on a rule's last declaration, so the
+      // trailing ";" here must be optional.
+      const grab = (cls, prop) => {
+        const m = out.match(new RegExp('\\.' + cls + '\\s*\\{[^}]*' + prop + '\\s*:\\s*([^;}]+)'));
+        return m ? m[1].trim() : null;
+      };
+      ok('Tailwind default p-4 survives the injected config',
+        grab('p-4', 'padding') === '1rem', grab('p-4', 'padding') || 'not found');
+      ok('Tailwind default gap-8 survives the injected config',
+        grab('gap-8', 'gap') === '2rem', grab('gap-8', 'gap') || 'not found');
+    } else {
+      console.log('  – skipped  real tailwindcss compile (tailwindcss not resolvable here)');
+    }
   }
 } finally {
   fs.rmSync(twRoot, { recursive: true, force: true });
@@ -442,6 +490,67 @@ ok('no rejected colour is actually usable (guards against a stale list)',
     .filter((h) => /^#[0-9A-F]{6}$/i.test(h) && !LIGHT.some((c) => ratio(h.toUpperCase(), c) < NT)).length === 0);
 ok('the tokens state the non-text threshold explicitly',
   tokens.dataViz.nonTextThreshold === NT);
+
+// The dark cap is a design recommendation, not a contrast limit — the claim
+// must not be over-stated, and the published set must still be separable.
+ok('the tokens admit the dark cap is a design choice, not a contrast limit',
+  /not contrast|restraint/i.test(tokens.dataViz.darkSeries.basis),
+  tokens.dataViz.darkSeries.basis);
+ok('the tokens report how many colours contrast actually allows on dark',
+  tokens.dataViz.darkSeries.contrastAllows > tokens.dataViz.darkSeries.max,
+  `allows ${tokens.dataViz.darkSeries.contrastAllows}, recommends ${tokens.dataViz.darkSeries.max}`);
+{
+  const lums = tokens.dataViz.darkSeries.order.map((h) => ratio(h, '#121212'));
+  const gaps = lums.slice(1).map((v, i) => Math.abs(v - lums[i]));
+  const min = Math.min(...gaps);
+  ok(`published dark series stay separable on ink (min gap ${min.toFixed(2)}:1)`,
+    min >= (tokens.dataViz.darkSeries.minSeparation ?? 1.0),
+    gaps.map((g) => g.toFixed(2)).join(', '));
+}
+{
+  const lums = tokens.dataViz.lightSeries.order.map((h) => ratio(h, '#FFFFFF'));
+  const gaps = lums.slice(1).map((v, i) => Math.abs(v - lums[i]));
+  const min = Math.min(...gaps);
+  ok(`published light series stay separable on white (min gap ${min.toFixed(2)}:1)`, min >= 1.0,
+    gaps.map((g) => g.toFixed(2)).join(', '));
+}
+
+// CSS and JSON must publish the same series, or a project using the stylesheet
+// silently keeps the old below-threshold colours.
+const CSS_TO_HEX = {
+  'deep-blue': '#002F5B', blue: '#007CFF', azure: '#00A1FF', sky: '#A0DAF7',
+  'electric-cyan': '#00F6FF', lavender: '#DFC8F5', blush: '#FFD1D4', mint: '#B3F4A8',
+  citron: '#F4F9A7', graphite: '#8D9390', ink: '#121212', slate: '#707070',
+  silver: '#C3C3C3', mist: '#E1E3E6', white: '#FFFFFF',
+};
+const lightBlock = css.slice(css.indexOf(':root {'), css.indexOf(':root[data-theme="dark"]'));
+const cssSeriesHex = (n) => {
+  const m = lightBlock.match(new RegExp('--kimi-chart-series-' + n + ':\\s*var\\(--kimi-([a-z-]+)\\)'));
+  return m ? CSS_TO_HEX[m[1]] : null;
+};
+for (let i = 1; i <= tokens.dataViz.lightSeries.order.length; i++) {
+  ok(`CSS light series ${i} matches JSON (${tokens.dataViz.lightSeries.order[i - 1]})`,
+    cssSeriesHex(String(i)) === tokens.dataViz.lightSeries.order[i - 1],
+    `css=${cssSeriesHex(String(i))}`);
+}
+{
+  const nums = [...new Set((lightBlock.match(/--kimi-chart-series-(\d):/g) || []).map((s) => Number(s.match(/(\d)/)[1])))];
+  ok('CSS light series count matches JSON',
+    Math.max(...nums) === tokens.dataViz.lightSeries.order.length, `css max=${Math.max(...nums)}`);
+}
+ok('CSS no longer publishes the below-threshold light series (azure / graphite)',
+  !/--kimi-chart-series-deep:\s*var\(--kimi-azure\)/.test(css));
+{
+  const darkBlock = css.slice(css.indexOf(':root[data-theme="dark"]'), css.indexOf('@media (prefers-color-scheme: dark)'));
+  const darkHex = (n) => {
+    const m = darkBlock.match(new RegExp('--kimi-chart-series-' + n + ':\\s*var\\(--kimi-([a-z-]+)\\)'));
+    return m ? CSS_TO_HEX[m[1]] : null;
+  };
+  for (let i = 1; i <= tokens.dataViz.darkSeries.order.length; i++) {
+    ok(`CSS dark series ${i} matches JSON (${tokens.dataViz.darkSeries.order[i - 1]})`,
+      darkHex(String(i)) === tokens.dataViz.darkSeries.order[i - 1], `css=${darkHex(String(i))}`);
+  }
+}
 
 // --- 7. no brand asset shipped ---
 console.log('\n7. brand assets stay link-only');

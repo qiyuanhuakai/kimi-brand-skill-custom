@@ -6,7 +6,7 @@
  *   1. tokens JSON parses and contains the full official 15-colour palette
  *   2. every hex used in the CSS theme is either official or a documented derived value
  *   3. the contrast ratios published in the docs are mathematically correct
- *   4. the wordmark SVG is a well-formed 96x32 viewBox
+ *   4. no brand asset file is shipped in this repo (logo stays link-only)
  *
  * Usage: node scripts/verify-tokens.mjs
  * Exit code 0 = all checks passed.
@@ -66,8 +66,8 @@ ok('uses only official + documented derived colours', offPalette.length === 0, o
 ok('declares every official colour as a variable',
   OFFICIAL_PALETTE.every((h) => css.includes(h)));
 ok('brand blue is #007CFF', css.includes('--kimi-blue: #007CFF'));
-ok('link colour is deep blue, not brand blue (AA safety)',
-  /--kimi-text-link:\s*var\(--kimi-deep-blue\)/.test(css));
+ok('link colour is brand blue — official values are not substituted',
+  /--kimi-text-link:\s*var\(--kimi-blue\)/.test(css));
 ok('braces are balanced', (css.match(/{/g) || []).length === (css.match(/}/g) || []).length);
 
 // --- 3. contrast maths ---
@@ -96,21 +96,26 @@ for (const [label, [fg, bg, published]] of Object.entries(EXPECTED)) {
   ok(`${label} = ${actual.toFixed(2)}:1 (docs say ${published})`,
     Math.abs(actual - published) < 0.02, Math.abs(actual - published) >= 0.02 ? `MISMATCH ${actual.toFixed(2)}` : '');
 }
-// The safety rule this skill leans on must hold.
-ok('brand blue on white really does fail AA for body text (rule is load-bearing)',
-  ratio('#007CFF', '#FFFFFF') < 4.5);
-ok('deep blue on white passes AA comfortably (recommended substitute)',
-  ratio('#002F5B', '#FFFFFF') >= 4.5);
+// Brand colours are used as published. These assertions pin the *measured
+// facts* the docs quote, so the numbers cannot silently drift.
+ok('brand blue on white is 3.94:1 (AA-large) and is still used as-is',
+  ratio('#007CFF', '#FFFFFF') < 4.5 && css.includes('--kimi-text-link: var(--kimi-blue)'));
+ok('ink on brand blue reaches AA for small text on a blue fill (4.75:1)',
+  ratio('#121212', '#007CFF') >= 4.5);
 ok('all four accents on ink pass AAA (dark-surface safety)',
   ['#DFC8F5', '#FFD1D4', '#B3F4A8', '#F4F9A7'].every((c) => ratio(c, '#121212') >= 7));
 
-// --- 4. wordmark ---
-console.log('\n4. wordmark SVG');
-const svg = read('assets/kimi-wordmark.svg');
-ok('has a 96x32 viewBox', svg.includes('viewBox="0 0 96 32"'));
-ok('is a single unmodified path', (svg.match(/<path/g) || []).length === 1);
-ok('uses currentColor fill for theming', svg.includes('fill="currentColor"'));
-ok('has no raster image embedded', !svg.includes('<image') && !svg.includes('data:'));
+// --- 4. no brand asset shipped ---
+console.log('\n4. brand assets stay link-only');
+const assetsDir = path.join(ROOT, 'assets');
+const shipped = fs.readdirSync(assetsDir);
+const brandFiles = shipped.filter((f) => /\.(svg|png|jpe?g|webp|zip)$/i.test(f));
+ok('no logo or other brand-asset binary in assets/', brandFiles.length === 0,
+  brandFiles.join(', ') || 'none');
+ok('logo asset delivery is documented as link-only',
+  /link-only/i.test(tokens.logo.assetDelivery));
+ok('official logo zip URL is recorded', typeof tokens.logo.officialAssetZip === 'string'
+  && tokens.logo.officialAssetZip.startsWith('https://'));
 
 // --- summary ---
 console.log(failures === 0

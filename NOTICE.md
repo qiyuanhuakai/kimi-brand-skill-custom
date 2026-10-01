@@ -22,8 +22,8 @@
 
 以下为便于工程落地而推导，**不冒充官方规范**：
 
-- 色板各色的**名称与角色分工**（如 `kimi-deep-blue` = "白底正文级链接"）
-- **WCAG 2.1 对比度实测值**及由此得出的用色硬规则
+- 色板各色的**名称与角色分工**（如 `kimi-deep-blue` = "品牌蓝轴的高对比端"）
+- **WCAG 2.1 对比度实测值**（作为可读性边界记录，**不作为替换品牌色的理由**）
 - **语义 token 命名**（`--kimi-surface`、`--kimi-text-link` 等）与深浅底搭配建议
 - **间距 / 圆角 / 字重 / 字号阶梯**的具体数值
 - Logo **最小尺寸与留白**的工程兜底值（官方以图片形式发布，未给出可复制数值）
@@ -33,12 +33,12 @@
 
 ## 三、品牌资产权利
 
-- `assets/kimi-wordmark.svg` 是从 kimi.com 页面内联字标**原样复制**的 96×32 "KIMI" 字标，路径数据未作任何修改（已用脚本与官方源码逐字符比对验证）。
+- **本仓库不附带任何 Logo 或品牌资产文件**（无 SVG / PNG / zip）。这是刻意设计：Logo 是 Moonshot AI 的注册资产，其条款保留随时要求移除的权利，把文件放进公开仓库会让整个仓库都暴露在下架风险下。`scripts/verify-tokens.mjs` 会检查并阻止品牌资产文件被误加入。
+- 交付物中的 Logo 一律从[官方素材包](https://kimi-file.kimi.ai/prod-chat-kimi/kfs/4/1/2026-08-12/1d9u74p1l51jas5cp5oq0?response-content-disposition=attachment%3Bfilename%3Dkimi-logo-assets.zip)获取后引用，或直接链接官网资源。
 - Kimi 名称、Logo、商标及全部品牌资产为 **Moonshot AI 的专有财产**。
 - Logo 资产仅授权**编辑性、媒体及非商业推广**用途；**不得**修改、扭曲、改色、拉伸或加任何效果；**不得**用于暗示官方背书或从属关系。
 - 商业使用、品牌许可、跨界合作请联系 `hi@moonshot.ai`；法务 `legal@moonshot.ai`；媒体与传播 `globalpr@moonshot.ai`。
-- Moonshot AI 保留随时撤销许可或要求移除资产的权利。本仓库中的字标可被要求下架。
-- 需要正式 Logo 资产（PNG / 多色版 / 反白版 / 应用图标）请使用[官方素材包](https://kimi-file.kimi.ai/prod-chat-kimi/kfs/4/1/2026-08-12/1d9u74p1l51jas5cp5oq0?response-content-disposition=attachment%3Bfilename%3Dkimi-logo-assets.zip)。
+- 需要正式 Logo 资产（PNG / 多色版 / 反白版 / 应用图标）请使用上述官方素材包。**不要**从官网页面抠取路径自行重绘。
 
 ## 四、字体授权
 

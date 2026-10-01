@@ -26,21 +26,30 @@
 | 使用条款（中） | <https://www.kimi.com/zh-cn/policies/logo-usage-terms> |
 | 使用条款（英） | <https://www.kimi.ai/policies/logo-usage-terms> |
 
-需要 Logo 时**优先从官方 zip 下载**，而不是从本 Skill 或其他站点取二手副本——官方包会随品牌更新，且是条款授权的来源渠道。
+需要 Logo 时**只用官方 zip**：从官网下载后再使用，不要从本 Skill 或其他站点取二手副本——官方包会随品牌更新，且是条款授权的来源渠道。
 
-## 本仓库内的字标
+## 本 Skill 不附带 Logo 文件
 
-`assets/kimi-wordmark.svg` 是从 kimi.com 官方页面内联字标**原样复制**的 96×32 "KIMI" 字标（未作任何修改），用于在网页/文档中做非商业、编辑性引用。**它不替代官方 zip**：需要 PNG、多色版、反白版、应用图标等一律走官方下载。
+本仓库**不包含任何 Logo 文件**（SVG / PNG 均无）。这是刻意的：Logo 是 Moonshot AI 的注册资产，条款保留其随时要求移除的权利，把文件放进公开仓库会让整个仓库都暴露在下架风险下。
+
+因此交付物中的 Logo 一律**引用官方来源**：
 
 ```html
-<!-- 用法：仅整体缩放，不改色不变形 -->
-<img src="./kimi-wordmark.svg" alt="Kimi" height="20" />
+<!-- 方式一：先从官方 zip 下载到自己的静态目录，再引用（推荐） -->
+<img src="/assets/kimi-logo.png" alt="Kimi" height="20" />
+
+<!-- 方式二：直接链接官网，不落盘 -->
+<a href="https://www.kimi.com" aria-label="Kimi">
+  <img src="https://www.kimi.com/…官方 logo 资源…" alt="Kimi" height="20" />
+</a>
 ```
 
-```css
-/* 深色底反白用法：只改 fill，不改形状 —— 注意：改色属于"改动"，仅在反白场景使用官方反白资产优先 */
-.kimi-logo--dark { filter: invert(1); } /* 兜底方案，优先改用官方反白版资产 */
+```md
+<!-- 文档 / PPT / 报告里：直接写官方来源，不重绘 -->
+![Kimi Logo](官方 zip 下载后的文件路径)（来源：https://www.kimi.com/resources/kimi-brand）
 ```
+
+若确实需要矢量图，从官方 zip 取原始 SVG 用，不要从官网页面里抠路径重绘。
 
 ## 使用规范
 

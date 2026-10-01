@@ -11,7 +11,7 @@
 :root {
   /* ---- Brand blue axis ---- */
   --kimi-blue: #007CFF;            /* core brand blue — primary actions, key highlights */
-  --kimi-deep-blue: #002F5B;       /* AA-safe text/fill on light backgrounds */
+  --kimi-deep-blue: #002F5B;       /* 品牌蓝轴的高对比端 — 小字号正文、深色强调、渐变暗端 */
   --kimi-azure: #00A1FF;           /* secondary emphasis, gradient endpoint */
   --kimi-sky: #A0DAF7;             /* light fills, soft blocks */
   --kimi-electric-cyan: #00F6FF;   /* dark-surface highlight, chart focus */
@@ -43,9 +43,10 @@
   --kimi-text-primary: var(--kimi-ink);
   --kimi-text-secondary: var(--kimi-slate);
   --kimi-text-disabled: var(--kimi-graphite);
-  --kimi-text-link: var(--kimi-deep-blue);   /* NOT brand blue: 3.94:1 fails AA */
+  --kimi-text-link: var(--kimi-blue);      /* 品牌蓝直用，3.94:1 落在 AA-large 区间 */
   --kimi-accent: var(--kimi-blue);
   --kimi-accent-text: var(--kimi-white);
+  --kimi-on-accent: var(--kimi-ink);        /* 蓝底小字号正文时改用深色文字，不改底色 */
   --kimi-focus-ring: var(--kimi-blue);
 
   /* ---- Semantic: dark theme ---- */
@@ -137,9 +138,10 @@
   font-weight: var(--kimi-weight-medium);
   cursor: pointer;
 }
-/* AA small-text safe: deepen the fill instead of enlarging the type. */
-.kimi-btn--aa {
-  background: var(--kimi-deep-blue);
+/* Small-text labels on a brand-blue fill: use the dark on-accent ink, keep the fill. */
+.kimi-btn--on-accent {
+  color: var(--kimi-on-accent);
+  font-weight: var(--kimi-weight-semibold);
 }
 .kimi-btn--secondary {
   background: transparent;

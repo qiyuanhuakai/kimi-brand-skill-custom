@@ -15,7 +15,7 @@
   "color": {
     "brand": {
       "blue": { "value": "#007CFF", "role": "核心品牌蓝 — 主按钮、关键高亮、品牌识别主色" },
-      "deepBlue": { "value": "#002F5B", "role": "深蓝 — 白底正文级链接、深色强调、AA 小字安全底" },
+      "deepBlue": { "value": "#002F5B", "role": "深蓝 — 品牌蓝轴的高对比端，小字号正文、深色强调、渐变暗端" },
       "azure": { "value": "#00A1FF", "role": "亮蓝 — 渐变端点、次级强调、数据系列" },
       "sky": { "value": "#A0DAF7", "role": "天蓝 — 浅底背景、色块、辅助填充" },
       "electricCyan": { "value": "#00F6FF", "role": "电光青 — 深色场景高亮、图表焦点" }
@@ -47,22 +47,24 @@
   },
 
   "contrast": {
-    "$comment": "WCAG 2.1 measured ratios, verified with the standard relative-luminance formula. Ratios labelled AA/AAA refer to normal-size text.",
+    "$comment": "WCAG 2.1 measured ratios, verified with the standard relative-luminance formula. These record where colour stays legible. They are NOT a reason to substitute brand colours — official values are used as published.",
     "ink-on-white": 18.73,
     "deepBlue-on-white": 13.48,
     "slate-on-white": 4.95,
     "brandBlue-on-white": 3.94,
-    "brandBlue-on-white-verdict": "AA-large only — do not use for normal-size text on white",
+    "brandBlue-on-white-verdict": "AA-large — brand blue is the link and emphasis colour on white",
     "white-on-brandBlue": 3.94,
-    "white-on-brandBlue-verdict": "AA-large only — buttons with small text should use deepBlue",
+    "white-on-brandBlue-verdict": "AA-large — white on brand blue is the standard button and label treatment",
     "graphite-on-white": 3.13,
     "silver-on-white": 1.76,
     "silver-on-white-verdict": "decorative only — never carries text",
     "ink-on-brandBlue": 4.75,
     "accentOnInk": "12.2-16.9 for all four accent colors — AAA on dark",
     "rules": [
-      "On white backgrounds use deepBlue (#002F5B) for body-size links, not brand blue.",
-      "For AA small text on a filled button, use deepBlue as the fill, not brand blue.",
+      "Do not substitute official brand colour values to chase a contrast number.",
+      "Brand blue #007CFF is used directly for links, buttons and emphasis; 3.94:1 is accepted.",
+      "When small body text must sit on a brand-blue fill, change the text to ink #121212 (4.75:1) rather than the fill.",
+      "Deep blue #002F5B is a member of the brand-blue axis, available for high-contrast text — a pick from the official palette, not a modified brand colour.",
       "silver (#C3C3C3) is for borders, dividers and skeletons only."
     ]
   },
@@ -149,7 +151,9 @@
   },
 
   "logo": {
-    "wordmarkViewBox": "0 0 96 32",
+    "assetDelivery": "link-only — this skill ships no logo file. Fetch from the official asset zip and link or hotlink from the official source.",
+    "officialAssetZip": "https://kimi-file.kimi.ai/prod-chat-kimi/kfs/4/1/2026-08-12/1d9u74p1l51jas5cp5oq0?response-content-disposition=attachment%3Bfilename%3Dkimi-logo-assets.zip",
+    "usageTerms": "https://www.kimi.ai/policies/logo-usage-terms",
     "rules": [
       "No modification, distortion, recoloring, stretching, or alteration in any way.",
       "No implied endorsement, sponsorship, or affiliation without prior written consent.",

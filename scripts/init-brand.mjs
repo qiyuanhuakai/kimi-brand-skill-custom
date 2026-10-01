@@ -26,7 +26,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const TOKENS_PATH = path.join(ROOT, 'assets', 'kimi-brand-tokens.json');
 const THEME_PATH = path.join(ROOT, 'assets', 'kimi-brand-theme.css');
-const WORDMARK_PATH = path.join(ROOT, 'assets', 'kimi-wordmark.svg');
 
 // ---------- args ----------
 const argv = process.argv.slice(2);
@@ -127,11 +126,6 @@ if (format === 'json' || format === 'all') {
   writeFile('kimi-brand-tokens.json', JSON.stringify(tokens, null, 2) + '\n');
 }
 
-// ---------- 4. Wordmark (only when css/all, it's a web asset) ----------
-if (format === 'css' || format === 'all') {
-  writeFile('kimi-wordmark.svg', fs.readFileSync(WORDMARK_PATH, 'utf8'));
-}
-
 // ---------- report ----------
 console.log('\nKimi brand tokens → ' + targetDir + '\n');
 if (written.length) {
@@ -147,10 +141,11 @@ if (!written.length && !skipped.length) {
 console.log(`
 Next steps
   1. Load the fonts: Inter (body) + Geist Mono (code/metrics). Sentient is commercial — use a licensed copy or the documented serif fallback.
-  2. Link text on light backgrounds: use --kimi-deep-blue (#002F5B). Brand blue on white is 3.94:1 and fails AA for body text.
-  3. Filled buttons with small text: fill with #002F5B, not #007CFF, to stay AA.
+  2. Brand colours are used as published. #007CFF on white is 3.94:1 (AA-large) and that is accepted for links, buttons and emphasis — do not substitute a different blue.
+  3. If small body text must sit on a brand-blue fill, switch the text to ink #121212 (4.75:1) instead of changing the fill.
   4. Charts: neutral gray base, electric blue for the one metric that matters. Never distort the data.
-  5. Logo: do not modify, recolor, stretch, or add effects — and get written permission (hi@moonshot.ai) before any commercial use.
+  5. Logo: this skill ships no logo file. Download the official asset zip, do not modify, recolor, stretch or add effects, and get written permission (hi@moonshot.ai) before any commercial use.
 
+Official logo assets: ${tokens.logo.officialAssetZip}
 Full spec: ${tokens.source.brandGuidelinesZh}
 `);

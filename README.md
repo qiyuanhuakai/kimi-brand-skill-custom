@@ -16,29 +16,32 @@ references/
   brand-foundation.md                 设计原点、Visual Infra 五层、De-coding 质感
   color-system.md                     官方 15 色 + 角色分工 + WCAG 实测对比度
   typography-and-grid.md              Inter / Geist Mono / Sentient + 双层栅格
-  logo-and-licensing.md               Logo 规范 + 官方资产 + 5 条使用条款
+  logo-and-licensing.md               Logo 规范 + 官方资产链接 + 5 条使用条款
   data-visualization.md               图表配色映射、标注规范、反模式
   brand-visual-assets.md              UI 升级、生成式视觉、壁纸与纹理
   messaging-and-tone.md               官方对外定义、语气准则、联系邮箱
 assets/
   kimi-brand-tokens.json              机器可读 token（单一事实源）
   kimi-brand-theme.css                可直接引入的 CSS 变量
-  kimi-wordmark.svg                   官方 KIMI 字标（96×32，原样未改动）
 scripts/
   init-brand.mjs                      把 token 注入现有项目
+  verify-tokens.mjs                   自检：色板完整性、对比度计算、品牌资产合规
 ```
 
 ## 快速开始
 
 ```bash
-# 注入 CSS 变量 + 字标到你的项目
+# 注入 CSS 变量到你的项目
 node scripts/init-brand.mjs ./my-site --format css
 
 # 生成 Tailwind 配置
 node scripts/init-brand.mjs ./my-app --format tailwind
 
-# 全部生成（css + tailwind + json + svg），默认不覆盖已有文件
+# 全部生成（css + tailwind + json），默认不覆盖已有文件
 node scripts/init-brand.mjs ./my-project --format all
+
+# 自检 token 文件（24 项检查）
+node scripts/verify-tokens.mjs
 ```
 
 `--force` 覆盖已有文件。
@@ -53,15 +56,13 @@ node scripts/init-brand.mjs ./my-project --format all
 | 表现力点缀 | `#DFC8F5` `#FFD1D4` `#B3F4A8` `#F4F9A7` |
 | 中性灰阶 | `#8D9390` `#121212` `#707070` `#C3C3C3` `#E1E3E6` `#FFFFFF` |
 
-**三个最容易踩的坑**（都写进了 Skill 的硬性规则）
-
-1. 品牌蓝 `#007CFF` 在白底上只有 **3.94:1**——小字号正文链接要改用深蓝 `#002F5B`（13.48:1）。
-2. 白字按钮若用品牌蓝做底同样只有 3.94:1，要过 AA 得把底色加深到 `#002F5B`。
-3. `#C3C3C3` 在白底只有 1.76:1，只能画线，**永远不承载文字**。
+**品牌色不替换**：官方色值按发布值直接使用。`#007CFF` 在白底是 3.94:1（AA-large），用于链接、按钮、强调成立，不改色。确需在蓝底承载小字号正文时，把**文字**换成 `#121212`（4.75:1），而不是改填充色。唯一硬约束是 `#C3C3C3`——白底 1.76:1，只能画线，不能承载文字。
 
 **字体三元组**：Inter（正文/UI）· Geist Mono（代码/指标）· Sentient（引文，商业字体需授权，替换方案见 reference）。
 
-## Logo 使用红线
+## Logo：不附带文件，只给链接
+
+本仓库**不含任何 Logo 文件**。Logo 是 Moonshot AI 的注册资产，条款保留其随时要求移除的权利；放进公开仓库会让整个仓库都暴露在下架风险下。交付物中的 Logo 一律从[官方素材包](https://kimi-file.kimi.ai/prod-chat-kimi/kfs/4/1/2026-08-12/1d9u74p1l51jas5cp5oq0?response-content-disposition=attachment%3Bfilename%3Dkimi-logo-assets.zip)获取后引用。
 
 使用官方 Logo 即接受 [Logo 使用条款](https://www.kimi.ai/policies/logo-usage-terms)：
 
@@ -69,8 +70,6 @@ node scripts/init-brand.mjs ./my-project --format all
 - 仅授权编辑性、媒体及**非商业**推广用途
 - 不得暗示官方背书、赞助或从属关系
 - 商业使用需先联系 `hi@moonshot.ai` 取得书面许可
-
-需要 Logo 请走[官方素材包](https://kimi-file.kimi.ai/prod-chat-kimi/kfs/4/1/2026-08-12/1d9u74p1l51jas5cp5oq0?response-content-disposition=attachment%3Bfilename%3Dkimi-logo-assets.zip)，本仓库内的 SVG 只是从官网页面原样复制的字标，供非商业引用，不替代官方包。
 
 ## 数据来源与准确性
 

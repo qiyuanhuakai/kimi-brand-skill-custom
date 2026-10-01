@@ -43,7 +43,7 @@
   --kimi-text-primary: var(--kimi-ink);
   --kimi-text-secondary: var(--kimi-slate);
   --kimi-text-disabled: var(--kimi-graphite);
-  --kimi-text-link: var(--kimi-blue);      /* 品牌蓝直用，3.94:1 落在 AA-large 区间 */
+  --kimi-text-link: var(--kimi-blue);      /* 品牌蓝直用，链接与强调色 */
   --kimi-accent: var(--kimi-blue);
   --kimi-accent-text: var(--kimi-white);
   --kimi-on-accent: var(--kimi-ink);        /* 蓝底小字号正文时改用深色文字，不改底色 */
@@ -89,15 +89,17 @@
   --kimi-radius-card: 16px;
   --kimi-radius-container: 20px;
 
-  /* ---- Data visualization ---- */
+  /* ---- Data visualization: light-surface palette ----
+     Focus colour is deep blue, not electric cyan: cyan on white is only
+     1.34:1 and would be invisible. Cyan is reserved for dark surfaces. */
   --kimi-chart-surface: var(--kimi-white);
   --kimi-chart-surface-alt: var(--kimi-mist);
   --kimi-chart-grid: var(--kimi-silver);
   --kimi-chart-axis: var(--kimi-graphite);
   --kimi-chart-label: var(--kimi-slate);
   --kimi-chart-series-primary: var(--kimi-blue);
-  --kimi-chart-series-focus: var(--kimi-electric-cyan);
-  --kimi-chart-series-deep: var(--kimi-deep-blue);
+  --kimi-chart-series-focus: var(--kimi-deep-blue);
+  --kimi-chart-series-deep: var(--kimi-azure);
   --kimi-chart-series-neutral: var(--kimi-graphite);
 }
 
@@ -110,60 +112,27 @@
     --kimi-text-primary: var(--kimi-white);
     --kimi-text-secondary: var(--kimi-silver);
     --kimi-text-link: var(--kimi-sky);
+
+    /* Dark-surface chart palette.
+       Labels move to silver (10.63:1 on ink). Slate would be 3.78:1 here,
+       and only 2.71:1 on the raised surface — too weak for axis text.
+       Cyan is safe on dark (13.94:1) and is the correct focus colour. */
     --kimi-chart-surface: var(--kimi-ink);
     --kimi-chart-surface-alt: var(--kimi-ink-raised);
     --kimi-chart-grid: var(--kimi-ink-border);
+    --kimi-chart-axis: var(--kimi-silver);
+    --kimi-chart-label: var(--kimi-silver);
+    --kimi-chart-series-primary: var(--kimi-blue);
+    --kimi-chart-series-focus: var(--kimi-electric-cyan);
+    --kimi-chart-series-deep: var(--kimi-azure);
+    --kimi-chart-series-neutral: var(--kimi-graphite);
   }
 }
 
-/* ==========================================================================
-   Optional ready-made primitives.
-   Uncomment what you need, or delete this block and use only the variables.
-   ========================================================================== */
 
-/*
-.kimi-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--kimi-space-2);
-  height: 44px;
-  padding: 0 var(--kimi-space-6);
-  border: 0;
-  border-radius: var(--kimi-radius-control);
-  background: var(--kimi-blue);
-  color: var(--kimi-white);
-  font-family: var(--kimi-font-sans);
-  font-size: 16px;
-  font-weight: var(--kimi-weight-medium);
-  cursor: pointer;
-}
-/* Small-text labels on a brand-blue fill: use the dark on-accent ink, keep the fill. */
-.kimi-btn--on-accent {
-  color: var(--kimi-on-accent);
-  font-weight: var(--kimi-weight-semibold);
-}
-.kimi-btn--secondary {
-  background: transparent;
-  border: 1px solid var(--kimi-border);
-  color: var(--kimi-text-primary);
-}
-.kimi-btn:focus-visible {
-  outline: 2px solid var(--kimi-focus-ring);
-  outline-offset: 2px;
-}
-
-.kimi-card {
-  background: var(--kimi-surface-raised);
-  border: 1px solid var(--kimi-border);
-  border-radius: var(--kimi-radius-card);
-  padding: var(--kimi-space-6);
-}
-
-.kimi-metric {
-  font-family: var(--kimi-font-mono);
-  font-weight: var(--kimi-weight-medium);
-  font-variant-numeric: tabular-nums;
-  color: var(--kimi-text-primary);
-}
-*/
+/* This file intentionally contains ONLY custom properties (plus one dark-mode
+   media override). Ready-made components live in kimi-components.css, which is
+   opt-in. They are kept in a separate file on purpose: CSS does not support
+   nested comments, so wrapping component rules in an outer block comment ends
+   that comment at the first inner comment terminator, silently activating
+   every rule that follows. */

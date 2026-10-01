@@ -26,28 +26,106 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const TOKENS_PATH = path.join(ROOT, 'assets', 'kimi-brand-tokens.json');
 const THEME_PATH = path.join(ROOT, 'assets', 'kimi-brand-theme.css');
+const COMPONENTS_PATH = path.join(ROOT, 'assets', 'kimi-components.css');
 
 // ---------- args ----------
-const argv = process.argv.slice(2);
-const flags = new Set(argv.filter((a) => a.startsWith('--')));
-const positional = argv.filter((a) => !a.startsWith('--'));
-const targetDir = path.resolve(process.cwd(), positional[0] || '.');
+// Explicit parser: an option's value is consumed as a value, never as a
+// positional. Unknown options and missing values are hard errors, so a typo
+// can never silently write files to a directory named after the option value.
+const VALID_FORMATS = ['css', 'tailwind', 'json', 'all'];
+const VALUE_OPTIONS = new Set(['--format', '--target']);
+const BOOL_OPTIONS = new Set(['--force', '--help', '-h']);
+const KNOWN_OPTIONS = new Set([...VALUE_OPTIONS, ...BOOL_OPTIONS]);
 
-let format = 'all';
-const fmtArg = argv.find((a) => a.startsWith('--format='));
-if (fmtArg) format = fmtArg.split('=')[1];
-else {
-  const i = argv.indexOf('--format');
-  if (i !== -1 && argv[i + 1] && !argv[i + 1].startsWith('--')) format = argv[i + 1];
+function parseArgs(argv) {
+  const out = { target: null, format: null, force: false, help: false };
+  const rest = [];
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+
+    if (arg === '--') { rest.push(...argv.slice(i + 1)); break; }
+
+    // --key=value form
+    const eq = arg.match(/^(--[a-z-]+)=(.*)$/);
+    if (eq) {
+      const [, key, value] = eq;
+      if (!KNOWN_OPTIONS.has(key)) die(`Unknown option "${key}". Known options: ${[...KNOWN_OPTIONS].sort().join(', ')}`);
+      if (!VALUE_OPTIONS.has(key)) die(`Option "${key}" does not take a value.`);
+      if (value === '') die(`Option "${key}" requires a value.`);
+      assign(out, key, value);
+      continue;
+    }
+
+    if (arg.startsWith('-') && arg !== '-') {
+      if (!KNOWN_OPTIONS.has(arg)) die(`Unknown option "${arg}". Known options: ${[...KNOWN_OPTIONS].sort().join(', ')}`);
+      if (BOOL_OPTIONS.has(arg)) { assign(out, arg, true); continue; }
+      // value option in --key value form
+      const value = argv[i + 1];
+      if (value === undefined || value.startsWith('--')) die(`Option "${arg}" requires a value.`);
+      assign(out, arg, value);
+      i++;
+      continue;
+    }
+
+    rest.push(arg);
+  }
+
+  if (rest.length > 1) die(`Expected at most one target directory, received ${rest.length}: ${rest.join(', ')}`);
+  if (rest.length === 1) {
+    if (out.target !== null) die('Target directory given twice: as a positional and with --target.');
+    out.target = rest[0];
+  }
+  if (out.format === null) out.format = 'all';
+  if (!VALID_FORMATS.includes(out.format)) {
+    die(`Invalid --format "${out.format}". Expected one of: ${VALID_FORMATS.join(', ')}`);
+  }
+  return out;
 }
 
-const force = flags.has('--force');
-const validFormats = ['css', 'tailwind', 'json', 'all'];
+function assign(out, key, value) {
+  switch (key) {
+    case '--format': out.format = value; break;
+    case '--target': out.target = value; break;
+    case '--force': out.force = true; break;
+    case '--help':
+    case '-h': out.help = true; break;
+    default: die(`Unhandled option "${key}".`);
+  }
+}
 
-if (!validFormats.includes(format)) {
-  console.error(`✗ Invalid --format "${format}". Expected one of: ${validFormats.join(', ')}`);
+function die(message) {
+  console.error(`✗ ${message}`);
+  console.error('\nUsage: node scripts/init-brand.mjs [targetDir] [--format css|tailwind|json|all] [--force]');
   process.exit(1);
 }
+
+const args = parseArgs(process.argv.slice(2));
+
+if (args.help) {
+  console.log(`
+Kimi brand token injector
+
+Usage:
+  node scripts/init-brand.mjs [targetDir] [--format css|tailwind|json|all] [--force]
+
+Options:
+  --format <css|tailwind|json|all>  What to emit. Default: all
+  --force                          Overwrite existing files
+  --target <dir>                   Same as the positional target directory
+  -h, --help                       Show this help
+
+Examples:
+  node scripts/init-brand.mjs ./my-site --format css
+  node scripts/init-brand.mjs --format css            (writes to the current directory)
+`);
+  process.exit(0);
+}
+
+const targetDir = path.resolve(process.cwd(), args.target || '.');
+const format = args.format;
+const force = args.force;
+
 if (fs.existsSync(targetDir) && !fs.statSync(targetDir).isDirectory()) {
   console.error(`✗ Target path exists but is not a directory: ${targetDir}`);
   process.exit(1);
@@ -72,6 +150,7 @@ function writeFile(relPath, content) {
 // ---------- 1. CSS ----------
 if (format === 'css' || format === 'all') {
   writeFile('kimi-brand-theme.css', fs.readFileSync(THEME_PATH, 'utf8'));
+  writeFile('kimi-components.css', fs.readFileSync(COMPONENTS_PATH, 'utf8'));
 }
 
 // ---------- 2. Tailwind ----------
@@ -141,7 +220,7 @@ if (!written.length && !skipped.length) {
 console.log(`
 Next steps
   1. Load the fonts: Inter (body) + Geist Mono (code/metrics). Sentient is commercial — use a licensed copy or the documented serif fallback.
-  2. Brand colours are used as published. #007CFF on white is 3.94:1 (AA-large) and that is accepted for links, buttons and emphasis — do not substitute a different blue.
+  2. Brand colours are used as published — never substitute a different blue. Note that white on a brand-blue fill is 3.94:1, which meets the 3:1 large-text threshold only (24px, or 18.66px at weight 700); the default pairing in kimi-components.css uses ink on blue at 4.75:1 so it passes at any size.
   3. If small body text must sit on a brand-blue fill, switch the text to ink #121212 (4.75:1) instead of changing the fill.
   4. Charts: neutral gray base, electric blue for the one metric that matters. Never distort the data.
   5. Logo: this skill ships no logo file. Download the official asset zip, do not modify, recolor, stretch or add effects, and get written permission (hi@moonshot.ai) before any commercial use.

@@ -22,16 +22,17 @@ references/
   messaging-and-tone.md               官方对外定义、语气准则、联系邮箱
 assets/
   kimi-brand-tokens.json              机器可读 token（单一事实源）
-  kimi-brand-theme.css                可直接引入的 CSS 变量
+  kimi-brand-theme.css                CSS 变量（仅变量，不含组件）
+  kimi-components.css                 可选组件样式，需在 theme 之后引入
 scripts/
   init-brand.mjs                      把 token 注入现有项目
-  verify-tokens.mjs                   自检：色板完整性、对比度计算、品牌资产合规
+  verify-tokens.mjs                   自检：色板、对比度、CSS 解析、参数行为、品牌资产合规
 ```
 
 ## 快速开始
 
 ```bash
-# 注入 CSS 变量到你的项目
+# 注入 CSS 变量与组件到你的项目
 node scripts/init-brand.mjs ./my-site --format css
 
 # 生成 Tailwind 配置
@@ -40,11 +41,11 @@ node scripts/init-brand.mjs ./my-app --format tailwind
 # 全部生成（css + tailwind + json），默认不覆盖已有文件
 node scripts/init-brand.mjs ./my-project --format all
 
-# 自检 token 文件（24 项检查）
+# 自检（58 项检查）
 node scripts/verify-tokens.mjs
 ```
 
-`--force` 覆盖已有文件。
+`--force` 覆盖已有文件。参数经严格解析：未知参数、缺值、多个目标目录都会报错退出，不会静默把参数值当成目录名。
 
 ## 核心内容速览
 
@@ -56,9 +57,21 @@ node scripts/verify-tokens.mjs
 | 表现力点缀 | `#DFC8F5` `#FFD1D4` `#B3F4A8` `#F4F9A7` |
 | 中性灰阶 | `#8D9390` `#121212` `#707070` `#C3C3C3` `#E1E3E6` `#FFFFFF` |
 
-**品牌色不替换**：官方色值按发布值直接使用。`#007CFF` 在白底是 3.94:1（AA-large），用于链接、按钮、强调成立，不改色。确需在蓝底承载小字号正文时，把**文字**换成 `#121212`（4.75:1），而不是改填充色。唯一硬约束是 `#C3C3C3`——白底 1.76:1，只能画线，不能承载文字。
+**品牌色不替换，但搭配要合规。** WCAG 门槛是普通文字 4.5:1、大字 3:1，而大字指 **24px，或 18.66px / 字重 700**。`#007CFF` 与白底互为 3.94:1——**只达大字门槛，不满足普通字号**。所以约束落在搭配上：
 
-**字体三元组**：Inter（正文/UI）· Geist Mono（代码/指标）· Sentient（引文，商业字体需授权，替换方案见 reference）。
+| 场景 | 做法 |
+| --- | --- |
+| 品牌蓝实底 + 文字 | 用 `#121212` 深色文字（4.75:1，**任何字号合规**）——默认方案 |
+| 品牌蓝实底 + 白字 | 仅当 ≥24px，或 ≥18.66px/700 |
+| 浅底次级文字 | `#707070`（4.95:1） |
+| 深底次级文字 / 轴标签 | `#C3C3C3`（10.63:1）；**不要**用 `#707070`（仅 3.78:1） |
+| 浅底图表焦点 | `#002F5B`；**不要**用青色（白底仅 1.34:1） |
+| 深底图表焦点 | `#00F6FF`（深底 13.94:1） |
+| `#C3C3C3` 承载文字 | 浅底禁止（1.76:1），**深底正是正确用法** |
+
+浅底与深底图表是两套配色，画布、网格、轴标签、焦点色必须成套切换。
+
+**字体三元组**：Inter（正文/UI，SIL OFL）· Geist Mono（代码/指标，SIL OFL）· Sentient（引文，**ITF FFL，个人与商业均免费**，可自托管但不可转售字体文件）。
 
 ## Logo：不附带文件，只给链接
 

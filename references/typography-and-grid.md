@@ -4,18 +4,28 @@
 
 ## 字体三元组（官方指定）
 
-| 字体 | 定位 | 承担内容 | 备注 |
+| 字体 | 定位 | 承担内容 | 授权 |
 | --- | --- | --- | --- |
-| **Inter** | 高效清晰 | 正文、UI 文本、表格、导航、按钮、表单 | 主力无衬线，开源可商用，最优先落地 |
-| **Geist Mono** | 硬核科技感 | 代码、命令行、终端、指标数值、技术标识 | 开源等宽，配数字与 ID |
-| **Sentient** | 人文思考 | 引文、标语、大字标题性表达、观点性文字 | 商业字体，需单独授权；无授权时替换方案见下 |
+| **Inter** | 高效清晰 | 正文、UI 文本、表格、导航、按钮、表单 | SIL OFL 1.1，开源可商用 |
+| **Geist Mono** | 硬核科技感 | 代码、命令行、终端、指标数值、技术标识 | SIL OFL 1.1，开源可商用 |
+| **Sentient** | 人文思考 | 引文、标语、大字标题性表达、观点性文字 | **ITF Free Font License (FFL)：个人与商业均免费** |
 
-### Sentient 不可用时的替换
+### Sentient 的授权（常见误解澄清）
 
-Sentient 为商业字体，未授权时**不要伪造或转嵌**。按表达意图二选一：
+Sentient 由 Indian Type Foundry 设计、通过 [Fontshare](https://www.fontshare.com/fonts/sentient) 免费发布，适用 **ITF FFL** 而非付费商业授权：
+
+- ✅ 个人与**商业**使用均可，无需购买授权
+- ✅ 允许自托管 webfont（@font-face）、嵌入应用、印刷、影视等任意媒介与规模
+- ❌ **不可转售字体文件本身**
+- ❌ **不可把字体文件重新分发到其他字体平台**
+- 使用时应随字体文件保留许可文件
+
+许可全文：<https://www.fontshare.com/licenses/itf-ffl> ｜ 下载：<https://www.fontshare.com/fonts/sentient>
+
+因此**不需要**替换 Sentient。若因离线环境或体积原因无法加载，再用下列开源回退：
 
 - 需要"人文/文学温度" → `Noto Serif SC`（中文衬线，开源）或 `Lora`（拉丁衬线，开源）
-- 只需"非等宽的柔和感" → 直接用 Inter 调大字号与字重（`letter-spacing` 微调）承担
+- 只需"非等宽的柔和感" → 直接用 Inter 调大字号与字重承担
 
 > 观察记录：kimi.com 营销站实际加载了 `Lora`、`Noto Serif SC` 与 `Google Sans Code`。这属于站点实现细节，**品牌规范以官方三元组为准**。
 

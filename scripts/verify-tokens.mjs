@@ -6,7 +6,10 @@
  *   1. tokens JSON parses and contains the full official 15-colour palette
  *   2. every hex used in the CSS theme is either official or a documented derived value
  *   3. the contrast ratios published in the docs are mathematically correct
- *   4. no brand asset file is shipped in this repo (logo stays link-only)
+ *   4. the CSS parses: balanced comments, no rules leaked into the theme file
+ *   5. init-brand.mjs parses arguments correctly (option values are not paths)
+ *   6. no brand asset file is shipped in this repo (logo stays link-only)
+ *   7. naming stays consistent across SKILL.md, the remote and the README
  *
  * Usage: node scripts/verify-tokens.mjs
  * Exit code 0 = all checks passed.
@@ -15,7 +18,9 @@
  */
 
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -30,8 +35,10 @@ const OFFICIAL_PALETTE = [
 const DERIVED = ['#2F2F2E'];
 
 let failures = 0;
+let total = 0;
 const ok = (label, cond, extra = '') => {
-  console.log(`${cond ? '  ✓' : '  ✗'} ${label}${extra ? ' — ' + extra : ''}`);
+  total++;
+  console.log(`${cond ? '  [PASS]' : '  [FAIL]'} ${label}${extra ? ' — ' + extra : ''}`);
   if (!cond) failures++;
 };
 
@@ -70,8 +77,53 @@ ok('link colour is brand blue — official values are not substituted',
   /--kimi-text-link:\s*var\(--kimi-blue\)/.test(css));
 ok('braces are balanced', (css.match(/{/g) || []).length === (css.match(/}/g) || []).length);
 
+// --- 4. real CSS parsing ---
+// The theme file must contain only custom properties and at-rules. A nested
+// comment bug previously terminated an outer block comment early and silently
+// activated component rules, so this parses rather than pattern-matches.
+console.log('\n3. CSS parsing');
+function stripComments(src) {
+  let out = '';
+  let inComment = false;
+  let commentCount = 0;
+  for (let i = 0; i < src.length; i++) {
+    if (!inComment && src[i] === '/' && src[i + 1] === '*') { inComment = true; commentCount++; i++; continue; }
+    if (inComment && src[i] === '*' && src[i + 1] === '/') { inComment = false; i++; continue; }
+    if (!inComment) out += src[i];
+  }
+  return { code: out, unterminated: inComment, comments: commentCount };
+}
+const themeParsed = stripComments(css);
+ok('theme: every block comment is terminated', !themeParsed.unterminated);
+ok('theme: no stray comment terminator left in code', !themeParsed.code.includes('*/'));
+// After stripping comments, only `:root` blocks and @media should remain.
+const themeSelectors = [...themeParsed.code.matchAll(/(^|[};])\s*([^{}@;]+)\{/g)]
+  .map((m) => m[2].trim())
+  .filter((s) => s && !s.startsWith('@'));
+const nonRoot = themeSelectors.filter((s) => !s.includes(':root'));
+ok('theme: contains no component rules outside :root', nonRoot.length === 0,
+  nonRoot.slice(0, 5).join(' | ') || `${themeSelectors.length} selector block(s), all :root`);
+
+const components = read('assets/kimi-components.css');
+const compParsed = stripComments(components);
+ok('components: every block comment is terminated', !compParsed.unterminated);
+const compRules = (compParsed.code.match(/{/g) || []).length;
+ok('components: actually defines rules (not fully commented out)', compRules > 0, `${compRules} rule block(s)`);
+ok('components: button defaults to ink on brand blue',
+  /\.kimi-btn\s*\{[^}]*color:\s*var\(--kimi-on-accent\)/s.test(compParsed.code));
+ok('components: white-on-blue variant pins a large-text size and weight',
+  /\.kimi-btn--white\s*\{[^}]*font-size:\s*19px[^}]*font-weight:\s*var\(--kimi-weight-bold\)/s.test(compParsed.code));
+
+// Dark chart palette must override labels and focus, not just the surface.
+ok('theme: dark block overrides chart label to silver',
+  /--kimi-chart-label:\s*var\(--kimi-silver\)/.test(css));
+ok('theme: light focus colour is deep blue, not cyan (cyan is 1.34:1 on white)',
+  /--kimi-chart-series-focus:\s*var\(--kimi-deep-blue\)/.test(css));
+ok('theme: dark block sets cyan as the focus colour',
+  /prefers-color-scheme:\s*dark[\s\S]*--kimi-chart-series-focus:\s*var\(--kimi-electric-cyan\)/.test(css));
+
 // --- 3. contrast maths ---
-console.log('\n3. contrast ratios (WCAG 2.1 relative luminance)');
+console.log('\n4. contrast ratios (WCAG 2.1 relative luminance)');
 const lum = (h) => {
   const c = [1, 3, 5]
     .map((i) => parseInt(h.slice(i, i + 2), 16) / 255)
@@ -90,23 +142,125 @@ const EXPECTED = {
   'ink-on-brandBlue': ['#121212', '#007CFF', 4.75],
   'graphite-on-white': ['#8D9390', '#FFFFFF', 3.13],
   'silver-on-white': ['#C3C3C3', '#FFFFFF', 1.76],
+  'silver-on-ink': ['#C3C3C3', '#121212', 10.63],
+  'slate-on-ink': ['#707070', '#121212', 3.78],
+  'slate-on-raisedDark': ['#707070', '#2F2F2E', 2.71],
+  'electricCyan-on-white': ['#00F6FF', '#FFFFFF', 1.34],
+  'electricCyan-on-ink': ['#00F6FF', '#121212', 13.94],
 };
 for (const [label, [fg, bg, published]] of Object.entries(EXPECTED)) {
   const actual = ratio(fg, bg);
   ok(`${label} = ${actual.toFixed(2)}:1 (docs say ${published})`,
     Math.abs(actual - published) < 0.02, Math.abs(actual - published) >= 0.02 ? `MISMATCH ${actual.toFixed(2)}` : '');
 }
-// Brand colours are used as published. These assertions pin the *measured
-// facts* the docs quote, so the numbers cannot silently drift.
-ok('brand blue on white is 3.94:1 (AA-large) and is still used as-is',
-  ratio('#007CFF', '#FFFFFF') < 4.5 && css.includes('--kimi-text-link: var(--kimi-blue)'));
-ok('ink on brand blue reaches AA for small text on a blue fill (4.75:1)',
-  ratio('#121212', '#007CFF') >= 4.5);
+
+// WCAG 2.1 thresholds. Large text is 18pt (24px) or 14pt bold (18.66px).
+const AA_NORMAL = 4.5, AA_LARGE = 3.0;
+const LARGE_PX = 24, LARGE_PX_BOLD = 18.66;
+ok('token file states the correct large-text definition',
+  tokens.contrast.thresholds.largeTextDefinition.includes('24px')
+  && tokens.contrast.thresholds.largeTextDefinition.includes('18.66px'));
+
+// These pin the *measured facts* behind the pairing rules, so a future colour
+// edit cannot quietly invalidate the guidance.
+ok('white on brand blue does NOT meet AA for normal text (3.94 < 4.5)',
+  ratio('#FFFFFF', '#007CFF') < AA_NORMAL);
+ok('...but it does meet the 3:1 large-text threshold',
+  ratio('#FFFFFF', '#007CFF') >= AA_LARGE);
+ok('ink on brand blue is the AA-safe default on a blue fill (4.75 >= 4.5)',
+  ratio('#121212', '#007CFF') >= AA_NORMAL);
+ok('silver is unusable as light-surface text (< 4.5) yet strong on ink (>= 4.5)',
+  ratio('#C3C3C3', '#FFFFFF') < AA_NORMAL && ratio('#C3C3C3', '#121212') >= AA_NORMAL);
+ok('slate is too weak for dark-surface labels, silver is not',
+  ratio('#707070', '#121212') < AA_NORMAL && ratio('#C3C3C3', '#121212') >= AA_NORMAL);
+ok('electric cyan is a dark-surface accent only (1.34 on white, 13.94 on ink)',
+  ratio('#00F6FF', '#FFFFFF') < AA_NORMAL && ratio('#00F6FF', '#121212') >= AA_NORMAL);
 ok('all four accents on ink pass AAA (dark-surface safety)',
   ['#DFC8F5', '#FFD1D4', '#B3F4A8', '#F4F9A7'].every((c) => ratio(c, '#121212') >= 7));
 
-// --- 4. no brand asset shipped ---
-console.log('\n4. brand assets stay link-only');
+// --- 5. init-brand argument behaviour ---
+// The previous parser let `--format css` treat "css" as the target directory.
+// These cases run the real script in throwaway directories.
+console.log('\n5. init-brand argument handling');
+const INIT = path.join(ROOT, 'scripts', 'init-brand.mjs');
+const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'kimi-argcheck-'));
+const runInit = (args, cwd) => {
+  const r = spawnSync(process.execPath, [INIT, ...args], { cwd, encoding: 'utf8' });
+  return { code: r.status, out: (r.stdout || '') + (r.stderr || '') };
+};
+const listTree = (dir) => {
+  const out = [];
+  const walk = (d, prefix) => {
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      if (e.name === '.git') continue;
+      if (e.isDirectory()) { out.push(prefix + e.name + '/'); walk(path.join(d, e.name), prefix + e.name + '/'); }
+      else out.push(prefix + e.name);
+    }
+  };
+  walk(dir, '');
+  return out;
+};
+try {
+  // (a) option value must not become the target directory
+  const a = path.join(tmpRoot, 'a'); fs.mkdirSync(a);
+  runInit(['--format', 'css'], a);
+  const aTree = listTree(a);
+  ok('--format css writes to the target dir, not ./css/',
+    aTree.includes('kimi-brand-theme.css') && !aTree.includes('css/'),
+    aTree.join(', ') || 'nothing written');
+
+  // (b) positional target after an option must be honoured
+  const b = path.join(tmpRoot, 'b', 'actual-target');
+  fs.mkdirSync(b, { recursive: true });
+  runInit(['--format', 'json', 'actual-target'], path.join(tmpRoot, 'b'));
+  const bTree = listTree(path.join(tmpRoot, 'b'));
+  ok('--format json <dir> writes into <dir>, not ./json/',
+    bTree.includes('actual-target/kimi-brand-tokens.json') && !bTree.includes('json/'),
+    bTree.join(', ') || 'nothing written');
+
+  // (c) a value option with no value is an error, not a silent default
+  const c = path.join(tmpRoot, 'c'); fs.mkdirSync(c);
+  const rc = runInit(['--format'], c);
+  ok('--format with no value exits non-zero', rc.code !== 0, `exit ${rc.code}`);
+  ok('--format with no value writes nothing', listTree(c).length === 0, listTree(c).join(', ') || 'clean');
+
+  // (d) unknown option is rejected
+  const d = path.join(tmpRoot, 'd'); fs.mkdirSync(d);
+  const rd = runInit(['--formt', 'css'], d);
+  ok('unknown option exits non-zero', rd.code !== 0, `exit ${rd.code}`);
+
+  // (e) invalid format value is rejected
+  const e = path.join(tmpRoot, 'e'); fs.mkdirSync(e);
+  const re = runInit(['--format', 'scss'], e);
+  ok('invalid --format value exits non-zero', re.code !== 0, `exit ${re.code}`);
+
+  // (f) two positionals is rejected
+  const f = path.join(tmpRoot, 'f'); fs.mkdirSync(f);
+  const rf = runInit(['a', 'b'], f);
+  ok('two target directories exits non-zero', rf.code !== 0, `exit ${rf.code}`);
+
+  // (g) --target is equivalent to the positional
+  const g = path.join(tmpRoot, 'g'); fs.mkdirSync(g);
+  runInit(['--format', 'json', '--target', 'here'], g);
+  const gTree = listTree(g);
+  ok('--target writes into the named directory',
+    gTree.includes('here/kimi-brand-tokens.json'), gTree.join(', ') || 'nothing written');
+
+  // (h) --target plus a positional is rejected rather than silently picking one
+  const h = path.join(tmpRoot, 'h'); fs.mkdirSync(h);
+  const rh = runInit(['--target', 'x', 'y'], h);
+  ok('--target plus positional exits non-zero', rh.code !== 0, `exit ${rh.code}`);
+
+  // (i) help exits cleanly
+  const i = path.join(tmpRoot, 'i'); fs.mkdirSync(i);
+  const ri = runInit(['--help'], i);
+  ok('--help exits 0 and writes nothing', ri.code === 0 && listTree(i).length === 0);
+} finally {
+  fs.rmSync(tmpRoot, { recursive: true, force: true });
+}
+
+// --- 6. no brand asset shipped ---
+console.log('\n6. brand assets stay link-only');
 const assetsDir = path.join(ROOT, 'assets');
 const shipped = fs.readdirSync(assetsDir);
 const brandFiles = shipped.filter((f) => /\.(svg|png|jpe?g|webp|zip)$/i.test(f));
@@ -117,8 +271,8 @@ ok('logo asset delivery is documented as link-only',
 ok('official logo zip URL is recorded', typeof tokens.logo.officialAssetZip === 'string'
   && tokens.logo.officialAssetZip.startsWith('https://'));
 
-// --- 5. naming consistency ---
-console.log('\n5. naming consistency');
+// --- 7. naming consistency ---
+console.log('\n7. naming consistency');
 const skill = read('SKILL.md');
 const nameMatch = skill.match(/^---\r?\n([\s\S]*?)\r?\n---/);
 ok('SKILL.md has YAML frontmatter', !!nameMatch);
@@ -150,6 +304,6 @@ ok('README documents the same install path',
 
 // --- summary ---
 console.log(failures === 0
-  ? '\n✓ all checks passed\n'
-  : `\n✗ ${failures} check(s) failed\n`);
+  ? `\nALL CHECKS PASSED (${total} checks)\n`
+  : `\n${failures} of ${total} CHECKS FAILED\n`);
 process.exit(failures === 0 ? 0 : 1);

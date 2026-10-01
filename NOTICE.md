@@ -26,9 +26,10 @@
 - **WCAG 2.1 对比度实测值**（作为可读性边界记录，**不作为替换品牌色的理由**）
 - **语义 token 命名**（`--kimi-surface`、`--kimi-text-link` 等）与深浅底搭配建议
 - **间距 / 圆角 / 字重 / 字号阶梯**的具体数值
-- Logo **最小尺寸与留白**的工程兜底值（官方以图片形式发布，未给出可复制数值）
-- 图表系列配色映射、连续与发散色阶
-- Sentient 缺失时的字体替换方案
+- Logo **最小尺寸与净空**的工程兜底值——**未核验**：官方仅以图片形式发布在品牌手册 Logo 章节，本 Skill 未逐张核验这些规范图，**不得当作合规依据**
+- 图表系列配色映射、连续与发散色阶，以及**深浅两套图表的具体色值**（官方仅给出"中性灰底 + 电光蓝高亮"的方向，未给出轴标签/焦点色的取值）
+- Sentient 不可加载时的字体回退方案
+- Sentient 的许可信息来自 [Fontshare 官方许可页](https://www.fontshare.com/licenses/itf-ffl)，不来自 Kimi 品牌手册
 - 深色底派生值 `#2F2F2E`（kimi.com 深色界面实际使用的分隔线/描边值，不属于官方 15 色色板）
 
 ## 三、品牌资产权利
@@ -42,9 +43,12 @@
 
 ## 四、字体授权
 
-- **Inter** 与 **Geist Mono**：开源字体（SIL OFL 1.1），可自由使用。
-- **Sentient**：商业字体，**需单独授权**。本仓库不含该字体文件，Skill 中给出了开源替代方案。使用者须自行确认授权状态。
-- **Noto Serif SC / Lora** 等替代字体：开源，仅作为 Sentient 的回退建议出现。
+- **Inter** 与 **Geist Mono**：SIL Open Font License 1.1，可自由使用，含商用。
+- **Sentient**：Indian Type Foundry 设计，经 [Fontshare](https://www.fontshare.com/fonts/sentient) 免费发布，适用 **ITF Free Font License (FFL)**。个人与**商业**使用均免费，允许自托管 webfont 与嵌入；**不可转售字体文件本身**，**不可重新分发到其他字体平台**。许可全文：<https://www.fontshare.com/licenses/itf-ffl>。
+  （注：早期版本的本仓库曾把 Sentient 描述为"需单独商业授权"，该描述有误，已更正。）
+- **Noto Serif SC / Lora** 等仅作为 Sentient 不可加载时的回退建议出现，自身为开源。
+
+本仓库**不包含任何字体文件**。
 
 ## 五、时效性
 

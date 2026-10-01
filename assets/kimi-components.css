@@ -1,0 +1,78 @@
+/* ==========================================================================
+   Kimi Brand Components — opt-in
+   Requires kimi-brand-theme.css to be loaded first (it defines the variables).
+
+   Usage:
+     <link rel="stylesheet" href="kimi-brand-theme.css">
+     <link rel="stylesheet" href="kimi-components.css">
+
+   This file is separate from the theme on purpose. CSS has no nested comments,
+   so component rules must never be wrapped in an outer "example" block comment
+   inside the theme file: the first inner comment terminator would end the
+   comment early and silently activate every rule after it.
+
+   Contrast basis for the button (WCAG 2.1):
+     #007CFF on #FFFFFF .......... 3.94:1  (fails 4.5 for normal-size text)
+     #FFFFFF on #007CFF .......... 3.94:1  (fails 4.5 for normal-size text)
+     #121212 on #007CFF .......... 4.75:1  (passes AA at any size)
+
+   Large text is 18pt (24px), or 14pt bold (18.66px). At that size the 3:1
+   threshold applies and white-on-blue qualifies — but only at those sizes.
+   ========================================================================== */
+
+.kimi-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--kimi-space-2);
+  height: 44px;
+  padding: 0 var(--kimi-space-6);
+  border: 0;
+  border-radius: var(--kimi-radius-control);
+  background: var(--kimi-blue);
+  /* Ink on brand blue = 4.75:1, so the default button is AA at any size. */
+  color: var(--kimi-on-accent);
+  font-family: var(--kimi-font-sans);
+  font-size: 16px;
+  font-weight: var(--kimi-weight-medium);
+  cursor: pointer;
+}
+
+/* White-on-brand-blue variant. Only compliant at large-text sizes, so the
+   size and weight are pinned here rather than left to the caller. */
+.kimi-btn--white {
+  color: var(--kimi-white);
+  font-size: 19px;
+  font-weight: var(--kimi-weight-bold);
+}
+
+.kimi-btn--secondary {
+  background: transparent;
+  border: 1px solid var(--kimi-border);
+  color: var(--kimi-text-primary);
+}
+
+.kimi-btn:focus-visible {
+  outline: 2px solid var(--kimi-focus-ring);
+  outline-offset: 2px;
+}
+
+.kimi-card {
+  background: var(--kimi-surface-raised);
+  border: 1px solid var(--kimi-border);
+  border-radius: var(--kimi-radius-card);
+  padding: var(--kimi-space-6);
+}
+
+.kimi-metric {
+  font-family: var(--kimi-font-mono);
+  font-weight: var(--kimi-weight-medium);
+  font-variant-numeric: tabular-nums;
+  color: var(--kimi-text-primary);
+}
+
+/* Silver carries text on dark surfaces (10.63:1 on ink) but never on light
+   ones (1.76:1 on white). This class is therefore scoped to dark. */
+.kimi-secondary-text {
+  color: var(--kimi-text-secondary);
+}

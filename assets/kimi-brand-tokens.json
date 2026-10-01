@@ -48,24 +48,39 @@
 
   "contrast": {
     "$comment": "WCAG 2.1 measured ratios, verified with the standard relative-luminance formula. These record where colour stays legible. They are NOT a reason to substitute brand colours — official values are used as published.",
+    "thresholds": {
+      "normalText": 4.5,
+      "largeText": 3.0,
+      "largeTextDefinition": "18pt (24px), or 14pt bold (18.66px) — 700 weight"
+    },
     "ink-on-white": 18.73,
     "deepBlue-on-white": 13.48,
     "slate-on-white": 4.95,
+    "ink-on-brandBlue": 4.75,
+    "inkOnBrandBlueVerdict": "AA at any size — the safe default pairing for a brand-blue fill",
     "brandBlue-on-white": 3.94,
-    "brandBlue-on-white-verdict": "AA-large — brand blue is the link and emphasis colour on white",
+    "brandBlue-on-white-verdict": "meets the 3:1 large-text threshold only; below 4.5, so it is not compliant for normal-size text",
     "white-on-brandBlue": 3.94,
-    "white-on-brandBlue-verdict": "AA-large — white on brand blue is the standard button and label treatment",
+    "white-on-brandBlue-verdict": "same as brandBlue-on-white — large text only (>=24px, or >=18.66px at 700)",
     "graphite-on-white": 3.13,
     "silver-on-white": 1.76,
-    "silver-on-white-verdict": "decorative only — never carries text",
-    "ink-on-brandBlue": 4.75,
+    "silver-on-white-verdict": "decorative only on light surfaces — never carries text there",
+    "silver-on-ink": 10.63,
+    "silver-on-inkVerdict": "AAA — this is the correct secondary text colour on dark surfaces",
+    "slate-on-ink": 3.78,
+    "slate-on-raisedDark": 2.71,
+    "slate-on-dark-verdict": "too weak for axis or label text on dark surfaces; use silver",
+    "electricCyan-on-white": 1.34,
+    "electricCyan-on-ink": 13.94,
+    "electricCyanVerdict": "dark-surface focus colour only — invisible on white, so light charts must focus with deep blue",
     "accentOnInk": "12.2-16.9 for all four accent colors — AAA on dark",
     "rules": [
       "Do not substitute official brand colour values to chase a contrast number.",
-      "Brand blue #007CFF is used directly for links, buttons and emphasis; 3.94:1 is accepted.",
-      "When small body text must sit on a brand-blue fill, change the text to ink #121212 (4.75:1) rather than the fill.",
+      "On a brand-blue fill, use ink #121212 (4.75:1) for text at any size.",
+      "White on a brand-blue fill is only compliant at large-text sizes: 24px, or 18.66px at weight 700.",
       "Deep blue #002F5B is a member of the brand-blue axis, available for high-contrast text — a pick from the official palette, not a modified brand colour.",
-      "silver (#C3C3C3) is for borders, dividers and skeletons only."
+      "silver (#C3C3C3) carries text on dark surfaces (10.63:1) but never on light ones (1.76:1).",
+      "Electric cyan (#00F6FF) is a dark-surface accent only; it is 1.34:1 on white."
     ]
   },
 
@@ -84,7 +99,9 @@
       "serif": {
         "primary": "Sentient",
         "role": "引文、标语、大字标题性表达",
-        "license": "commercial — separate license required",
+        "license": "ITF Free Font License (FFL) — free for personal and commercial use. Closed-source freeware, not an open-source licence: you may use and self-host it, but not resell the font files or redistribute them on another platform.",
+        "licenseUrl": "https://www.fontshare.com/licenses/itf-ffl",
+        "downloadUrl": "https://www.fontshare.com/fonts/sentient",
         "fallback": ["Noto Serif SC", "Source Han Serif SC", "Lora", "Georgia"]
       }
     },
@@ -126,21 +143,31 @@
     "textPrimary": "#121212",
     "series": {
       "primary": "#007CFF",
-      "focus": "#00F6FF",
-      "deep": "#002F5B",
-      "azure": "#00A1FF",
+      "focus": "#002F5B",
+      "deep": "#00A1FF",
+      "azure": "#A0DAF7",
       "neutral": "#8D9390"
     },
+    "focusNote": "Deep blue, not electric cyan: cyan is only 1.34:1 on a white surface.",
     "maxSeries": 5,
     "sequentialRamp": ["#E1E3E6", "#A0DAF7", "#007CFF", "#002F5B"],
     "divergingRamp": ["#002F5B", "#E1E3E6", "#007CFF"],
     "darkSurface": {
       "surface": "#121212",
+      "surfaceAlt": "#2F2F2E",
       "gridLine": "#2F2F2E",
       "axisLabel": "#C3C3C3",
+      "axisLine": "#C3C3C3",
       "textPrimary": "#FFFFFF",
-      "focus": "#00F6FF"
+      "series": {
+        "primary": "#007CFF",
+        "focus": "#00F6FF",
+        "deep": "#00A1FF",
+        "azure": "#A0DAF7",
+        "neutral": "#8D9390"
+      }
     },
+    "darkFocusNote": "Cyan is safe on ink (13.94:1) and is the correct dark-surface focus colour. Axis labels must be #C3C3C3: #707070 would be 3.78:1 on ink and only 2.71:1 on the raised surface.",
     "principles": [
       "Minimalism and reduction; the chart must first and foremost accurately convey the data.",
       "Neutral gray base with precise electric-blue highlight to direct attention to core metrics.",
@@ -160,8 +187,9 @@
       "Licensed solely for editorial, media, and non-commercial promotional uses.",
       "Scale proportionally only. Use the official asset zip for any variant."
     ],
-    "minimumWidth": { "screen": 64, "print": "20mm" },
+    "minimumWidth": { "screen": 64, "print": "20mm", "provenance": "UNVERIFIED engineering fallback — official values are published only as images in the brand guidelines and were not checked image by image" },
     "clearSpace": "at least one logo-height on all sides",
+    "clearSpaceProvenance": "UNVERIFIED engineering fallback, not an official measurement",
     "commercialUseContact": "hi@moonshot.ai"
   },
 

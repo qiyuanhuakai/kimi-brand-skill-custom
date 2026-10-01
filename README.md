@@ -2,7 +2,7 @@
 
 把 [Kimi 品牌手册](https://www.kimi.com/resources/kimi-brand) 变成一个可执行的 Skill：让 AI 在做 Kimi / Moonshot AI 相关的**视觉设计**与**对外文案**时，产出符合官方规范的东西，而不是凭印象配色。
 
-仓库即 Skill 根目录，克隆后可直接放入 skills 目录使用。
+仓库即 Skill 根目录，仓库名、`SKILL.md` 的 `name` 与安装后的目录名三者一致（`kimi-brand-skill-custom`），克隆后可直接放入 skills 目录使用。
 
 ## 为什么
 
@@ -82,7 +82,7 @@ node scripts/verify-tokens.mjs
 ## 安装为 Skill
 
 ```bash
-git clone https://github.com/qiyuanhuakai/kimi-brand-skill-custom.git ~/.minimax/skills/kimi-brand
+git clone https://github.com/qiyuanhuakai/kimi-brand-skill-custom.git ~/.minimax/skills/kimi-brand-skill-custom
 ```
 
 Skill 通过 `SKILL.md` 的 `description` 自动触发：当任务涉及 Kimi 品牌配色、Logo、字体、品牌化设计产物或对外文案口径时加载。

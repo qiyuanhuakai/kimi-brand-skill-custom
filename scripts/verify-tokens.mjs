@@ -117,6 +117,37 @@ ok('logo asset delivery is documented as link-only',
 ok('official logo zip URL is recorded', typeof tokens.logo.officialAssetZip === 'string'
   && tokens.logo.officialAssetZip.startsWith('https://'));
 
+// --- 5. naming consistency ---
+console.log('\n5. naming consistency');
+const skill = read('SKILL.md');
+const nameMatch = skill.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+ok('SKILL.md has YAML frontmatter', !!nameMatch);
+const skillName = nameMatch && (nameMatch[1].match(/^name:\s*(.+)$/m) || [])[1]?.trim();
+ok('frontmatter declares a kebab-case name', !!skillName && /^[a-z0-9]+(-[a-z0-9]+)*$/.test(skillName),
+  skillName || 'missing');
+ok('frontmatter declares a description', !!nameMatch && /^description:\s*\S/m.test(nameMatch[1]));
+
+// The repo name, the skill name, and the install directory must all agree,
+// so cloning the repo yields a correctly named skill directory.
+let repoName = null;
+try {
+  const cfg = fs.readFileSync(path.join(ROOT, '.git', 'config'), 'utf8');
+  const url = (cfg.match(/^\s*url\s*=\s*(\S+)\s*$/m) || [])[1];
+  if (url) {
+    const clean = url.replace(/\.git$/, '');
+    repoName = clean.split('/').filter(Boolean).pop() || null;
+  }
+} catch { /* not a git checkout — skip */ }
+if (repoName) {
+  ok('skill name matches the repository name', skillName === repoName, `${skillName} vs ${repoName}`);
+} else {
+  console.log('  – skipped  repo-name check (no git remote detected)');
+}
+
+ok('README documents the same install path',
+  skillName ? read('README.md').includes(`skills/${skillName}`) : false,
+  skillName ? `skills/${skillName}` : '');
+
 // --- summary ---
 console.log(failures === 0
   ? '\n✓ all checks passed\n'

@@ -1,5 +1,5 @@
 ---
-name: kimi-brand
+name: kimi-brand-skill-custom
 description: Kimi 品牌视觉与文案规范。当需要为 Kimi / Moonshot AI 产出任何品牌化产物时使用——网站与落地页、UI 设计、PPT / 文档 / 表格模板、图表与数据可视化、壁纸与生成式视觉物料、海报与社交媒体配图、品牌色与字体选型、Logo 使用、以及对外新闻稿、博文、联合公告的口径与语气。提供官方品牌蓝与完整色板、Inter / Geist Mono / Sentient 字体三元组、Logo 资产官方下载与使用条款、机器可读 design token（JSON / CSS）以及一键注入脚本。关键词：Kimi 品牌、品牌手册、brand guideline、brand kit、品牌色、Kimi 配色、Kimi logo、Kimi 字体、Moonshot AI 品牌、文案口径。
 ---
 

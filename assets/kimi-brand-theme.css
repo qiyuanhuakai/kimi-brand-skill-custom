@@ -1,0 +1,167 @@
+/* ==========================================================================
+   Kimi Brand Theme — CSS Custom Properties
+   Source: https://www.kimi.com/resources/kimi-brand
+   Usage:  @import url("./kimi-brand-theme.css");  or link it before your own CSS
+
+   Note: hex values and font families are official. The semantic token names
+   (--kimi-*) and the derived spacing scale are a working assignment by this
+   skill, designed for fast implementation.
+   ========================================================================== */
+
+:root {
+  /* ---- Brand blue axis ---- */
+  --kimi-blue: #007CFF;            /* core brand blue — primary actions, key highlights */
+  --kimi-deep-blue: #002F5B;       /* AA-safe text/fill on light backgrounds */
+  --kimi-azure: #00A1FF;           /* secondary emphasis, gradient endpoint */
+  --kimi-sky: #A0DAF7;             /* light fills, soft blocks */
+  --kimi-electric-cyan: #00F6FF;   /* dark-surface highlight, chart focus */
+
+  /* ---- Expressive accents (use sparingly, max 2 per surface) ---- */
+  --kimi-lavender: #DFC8F5;
+  --kimi-blush: #FFD1D4;
+  --kimi-mint: #B3F4A8;
+  --kimi-citron: #F4F9A7;
+
+  /* ---- Neutral / functional scale ---- */
+  --kimi-ink: #121212;             /* dark surfaces, body text */
+  --kimi-slate: #707070;           /* secondary text, icons */
+  --kimi-graphite: #8D9390;        /* disabled states, neutral chart base */
+  --kimi-silver: #C3C3C3;          /* borders, dividers, skeletons — never text */
+  --kimi-mist: #E1E3E6;            /* section and card fills, zebra rows */
+  --kimi-white: #FFFFFF;
+
+  /* ---- Derived dark-surface values (NOT part of the official 15-colour palette;
+          observed on kimi.com for dark hairlines and raised surfaces) ---- */
+  --kimi-ink-border: #2F2F2E;
+  --kimi-ink-raised: #2F2F2E;
+
+  /* ---- Semantic: light theme ---- */
+  --kimi-surface: var(--kimi-white);
+  --kimi-surface-sub: var(--kimi-mist);
+  --kimi-surface-raised: var(--kimi-white);
+  --kimi-border: var(--kimi-silver);
+  --kimi-text-primary: var(--kimi-ink);
+  --kimi-text-secondary: var(--kimi-slate);
+  --kimi-text-disabled: var(--kimi-graphite);
+  --kimi-text-link: var(--kimi-deep-blue);   /* NOT brand blue: 3.94:1 fails AA */
+  --kimi-accent: var(--kimi-blue);
+  --kimi-accent-text: var(--kimi-white);
+  --kimi-focus-ring: var(--kimi-blue);
+
+  /* ---- Semantic: dark theme ---- */
+  --kimi-surface-dark: var(--kimi-ink);
+  --kimi-surface-dark-sub: var(--kimi-ink-raised);
+  --kimi-surface-dark-raised: var(--kimi-ink-raised);
+  --kimi-border-dark: var(--kimi-ink-border);
+  --kimi-text-primary-dark: var(--kimi-white);
+  --kimi-text-secondary-dark: var(--kimi-silver);
+  --kimi-accent-dark: var(--kimi-electric-cyan);
+
+  /* ---- Typography ---- */
+  --kimi-font-sans: Inter, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, -apple-system, sans-serif;
+  --kimi-font-mono: "Geist Mono", "SF Mono", "Cascadia Code", Consolas, "Liberation Mono", monospace;
+  --kimi-font-serif: Sentient, "Noto Serif SC", "Source Han Serif SC", Lora, Georgia, serif;
+
+  --kimi-weight-regular: 400;
+  --kimi-weight-medium: 500;
+  --kimi-weight-semibold: 600;
+  --kimi-weight-bold: 700;
+
+  --kimi-leading-tight: 1.2;
+  --kimi-leading-body: 1.6;
+  --kimi-leading-relaxed: 1.75;
+
+  /* ---- Spacing scale (4 / 8 base) ---- */
+  --kimi-space-1: 4px;
+  --kimi-space-2: 8px;
+  --kimi-space-3: 12px;
+  --kimi-space-4: 16px;
+  --kimi-space-6: 24px;
+  --kimi-space-8: 32px;
+  --kimi-space-12: 48px;
+  --kimi-space-16: 64px;
+  --kimi-space-24: 96px;
+  --kimi-space-32: 128px;
+
+  /* ---- Radius ---- */
+  --kimi-radius-control: 8px;
+  --kimi-radius-card: 16px;
+  --kimi-radius-container: 20px;
+
+  /* ---- Data visualization ---- */
+  --kimi-chart-surface: var(--kimi-white);
+  --kimi-chart-surface-alt: var(--kimi-mist);
+  --kimi-chart-grid: var(--kimi-silver);
+  --kimi-chart-axis: var(--kimi-graphite);
+  --kimi-chart-label: var(--kimi-slate);
+  --kimi-chart-series-primary: var(--kimi-blue);
+  --kimi-chart-series-focus: var(--kimi-electric-cyan);
+  --kimi-chart-series-deep: var(--kimi-deep-blue);
+  --kimi-chart-series-neutral: var(--kimi-graphite);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --kimi-surface: var(--kimi-ink);
+    --kimi-surface-sub: var(--kimi-ink-raised);
+    --kimi-surface-raised: var(--kimi-ink-raised);
+    --kimi-border: var(--kimi-ink-border);
+    --kimi-text-primary: var(--kimi-white);
+    --kimi-text-secondary: var(--kimi-silver);
+    --kimi-text-link: var(--kimi-sky);
+    --kimi-chart-surface: var(--kimi-ink);
+    --kimi-chart-surface-alt: var(--kimi-ink-raised);
+    --kimi-chart-grid: var(--kimi-ink-border);
+  }
+}
+
+/* ==========================================================================
+   Optional ready-made primitives.
+   Uncomment what you need, or delete this block and use only the variables.
+   ========================================================================== */
+
+/*
+.kimi-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--kimi-space-2);
+  height: 44px;
+  padding: 0 var(--kimi-space-6);
+  border: 0;
+  border-radius: var(--kimi-radius-control);
+  background: var(--kimi-blue);
+  color: var(--kimi-white);
+  font-family: var(--kimi-font-sans);
+  font-size: 16px;
+  font-weight: var(--kimi-weight-medium);
+  cursor: pointer;
+}
+/* AA small-text safe: deepen the fill instead of enlarging the type. */
+.kimi-btn--aa {
+  background: var(--kimi-deep-blue);
+}
+.kimi-btn--secondary {
+  background: transparent;
+  border: 1px solid var(--kimi-border);
+  color: var(--kimi-text-primary);
+}
+.kimi-btn:focus-visible {
+  outline: 2px solid var(--kimi-focus-ring);
+  outline-offset: 2px;
+}
+
+.kimi-card {
+  background: var(--kimi-surface-raised);
+  border: 1px solid var(--kimi-border);
+  border-radius: var(--kimi-radius-card);
+  padding: var(--kimi-space-6);
+}
+
+.kimi-metric {
+  font-family: var(--kimi-font-mono);
+  font-weight: var(--kimi-weight-medium);
+  font-variant-numeric: tabular-nums;
+  color: var(--kimi-text-primary);
+}
+*/

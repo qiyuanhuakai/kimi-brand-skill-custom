@@ -1,0 +1,175 @@
+{
+  "$schema": "https://design-tokens.org/schema.json",
+  "name": "Kimi Brand Tokens",
+  "version": "1.0.0",
+  "description": "Kimi (Moonshot AI) brand design tokens. Hex values, font families and official URLs are sourced from the official Kimi Brand Guidelines. Token role names and the derived spacing/grid scale are a working assignment by this skill, not verbatim official naming.",
+  "source": {
+    "brandGuidelinesZh": "https://www.kimi.com/resources/kimi-brand",
+    "brandGuidelinesEn": "https://www.kimi.com/en/resources/kimi-brand",
+    "logoUsageTerms": "https://www.kimi.ai/policies/logo-usage-terms",
+    "wallpaperGenerator": "https://www.kimi.com/lp/wallpapers",
+    "logoAssetZip": "https://kimi-file.kimi.ai/prod-chat-kimi/kfs/4/1/2026-08-12/1d9u74p1l51jas5cp5oq0?response-content-disposition=attachment%3Bfilename%3Dkimi-logo-assets.zip",
+    "retrieved": "2026-09-02"
+  },
+
+  "color": {
+    "brand": {
+      "blue": { "value": "#007CFF", "role": "核心品牌蓝 — 主按钮、关键高亮、品牌识别主色" },
+      "deepBlue": { "value": "#002F5B", "role": "深蓝 — 白底正文级链接、深色强调、AA 小字安全底" },
+      "azure": { "value": "#00A1FF", "role": "亮蓝 — 渐变端点、次级强调、数据系列" },
+      "sky": { "value": "#A0DAF7", "role": "天蓝 — 浅底背景、色块、辅助填充" },
+      "electricCyan": { "value": "#00F6FF", "role": "电光青 — 深色场景高亮、图表焦点" }
+    },
+    "accent": {
+      "lavender": { "value": "#DFC8F5", "role": "淡紫 — 生成式视觉、柔和分区" },
+      "blush": { "value": "#FFD1D4", "role": "淡粉 — 暖色分区、人文温度场景" },
+      "mint": { "value": "#B3F4A8", "role": "薄荷绿 — 成功态、生长隐喻" },
+      "citron": { "value": "#F4F9A7", "role": "淡黄 — 提示态、探索隐喻" }
+    },
+    "neutral": {
+      "ink": { "value": "#121212", "role": "墨黑 — 深色底、正文文字" },
+      "slate": { "value": "#707070", "role": "深灰 — 次级文字、图标" },
+      "graphite": { "value": "#8D9390", "role": "中灰 — 禁用态、图表中性底" },
+      "silver": { "value": "#C3C3C3", "role": "浅灰 — 边框、分隔线、骨架（不承载文字）" },
+      "mist": { "value": "#E1E3E6", "role": "极浅灰 — 区块底、卡片底、斑马纹" },
+      "white": { "value": "#FFFFFF", "role": "白 — 浅色底、反白文字" }
+    },
+    "derived": {
+      "$comment": "Not part of the official 15-color palette. Observed on kimi.com for dark-mode hairlines and raised surfaces; included so dark mode has a defined elevation ramp without inventing new hues.",
+      "inkBorder": { "value": "#2F2F2E", "role": "深色底分隔线与描边（官方页面实际使用值）" },
+      "inkRaised": { "value": "#2F2F2E", "role": "深色底次级/抬升面" }
+    },
+    "order": [
+      "#002F5B", "#007CFF", "#00A1FF", "#A0DAF7", "#00F6FF",
+      "#DFC8F5", "#FFD1D4", "#B3F4A8", "#F4F9A7",
+      "#8D9390", "#121212", "#707070", "#C3C3C3", "#E1E3E6", "#FFFFFF"
+    ]
+  },
+
+  "contrast": {
+    "$comment": "WCAG 2.1 measured ratios, verified with the standard relative-luminance formula. Ratios labelled AA/AAA refer to normal-size text.",
+    "ink-on-white": 18.73,
+    "deepBlue-on-white": 13.48,
+    "slate-on-white": 4.95,
+    "brandBlue-on-white": 3.94,
+    "brandBlue-on-white-verdict": "AA-large only — do not use for normal-size text on white",
+    "white-on-brandBlue": 3.94,
+    "white-on-brandBlue-verdict": "AA-large only — buttons with small text should use deepBlue",
+    "graphite-on-white": 3.13,
+    "silver-on-white": 1.76,
+    "silver-on-white-verdict": "decorative only — never carries text",
+    "ink-on-brandBlue": 4.75,
+    "accentOnInk": "12.2-16.9 for all four accent colors — AAA on dark",
+    "rules": [
+      "On white backgrounds use deepBlue (#002F5B) for body-size links, not brand blue.",
+      "For AA small text on a filled button, use deepBlue as the fill, not brand blue.",
+      "silver (#C3C3C3) is for borders, dividers and skeletons only."
+    ]
+  },
+
+  "typography": {
+    "families": {
+      "sans": {
+        "primary": "Inter",
+        "role": "正文、UI 文本、表格、导航、按钮、表单",
+        "cjkFallback": ["PingFang SC", "Microsoft YaHei", "Noto Sans SC"]
+      },
+      "mono": {
+        "primary": "Geist Mono",
+        "role": "代码、命令行、终端、指标数值、版本号",
+        "cjkFallback": ["SF Mono", "Cascadia Code", "Consolas"]
+      },
+      "serif": {
+        "primary": "Sentient",
+        "role": "引文、标语、大字标题性表达",
+        "license": "commercial — separate license required",
+        "fallback": ["Noto Serif SC", "Source Han Serif SC", "Lora", "Georgia"]
+      }
+    },
+    "scale": [
+      { "token": "display", "relativeSize": "3.2-4x", "weight": 700, "family": "sansOrSerif", "lineHeight": 1.1, "letterSpacing": "-0.02em" },
+      { "token": "h1", "relativeSize": "2.2x", "weight": 700, "family": "sans", "lineHeight": 1.2, "letterSpacing": "-0.015em" },
+      { "token": "h2", "relativeSize": "1.6x", "weight": 600, "family": "sans", "lineHeight": 1.3, "letterSpacing": "-0.01em" },
+      { "token": "h3", "relativeSize": "1.25x", "weight": 600, "family": "sans", "lineHeight": 1.4, "letterSpacing": "0" },
+      { "token": "body", "relativeSize": "1x", "weight": 400, "family": "sans", "lineHeight": 1.6, "letterSpacing": "0" },
+      { "token": "caption", "relativeSize": "0.82x", "weight": 400, "family": "sans", "lineHeight": 1.5, "letterSpacing": "0" },
+      { "token": "metric", "relativeSize": "0.95x", "weight": 500, "family": "mono", "lineHeight": 1.4, "letterSpacing": "0" }
+    ],
+    "weightSteps": [400, 500, 600, 700]
+  },
+
+  "space": {
+    "scale": [0, 4, 8, 12, 16, 24, 32, 48, 64, 96, 128],
+    "base": 8,
+    "micro": 4
+  },
+
+  "radius": {
+    "control": 8,
+    "card": 16,
+    "container": 20
+  },
+
+  "grid": {
+    "base": "标准化基础网格 — 4/8 步进间距，跨端一致，用于表格、表单、密集正文、后台界面",
+    "expressive": "多元表现力网格 — 仅用于文字少、视觉主导的场景（大图、封面、Hero、品牌影片帧）"
+  },
+
+  "dataViz": {
+    "surface": "#FFFFFF",
+    "surfaceAlt": "#E1E3E6",
+    "gridLine": "#C3C3C3",
+    "axisLabel": "#707070",
+    "axisLine": "#8D9390",
+    "textPrimary": "#121212",
+    "series": {
+      "primary": "#007CFF",
+      "focus": "#00F6FF",
+      "deep": "#002F5B",
+      "azure": "#00A1FF",
+      "neutral": "#8D9390"
+    },
+    "maxSeries": 5,
+    "sequentialRamp": ["#E1E3E6", "#A0DAF7", "#007CFF", "#002F5B"],
+    "divergingRamp": ["#002F5B", "#E1E3E6", "#007CFF"],
+    "darkSurface": {
+      "surface": "#121212",
+      "gridLine": "#2F2F2E",
+      "axisLabel": "#C3C3C3",
+      "textPrimary": "#FFFFFF",
+      "focus": "#00F6FF"
+    },
+    "principles": [
+      "Minimalism and reduction; the chart must first and foremost accurately convey the data.",
+      "Neutral gray base with precise electric-blue highlight to direct attention to core metrics.",
+      "Never truncate or distort an axis in a way that misleads.",
+      "No 3D charts, no dual Y axes, no pie charts with more than 5 slices.",
+      "Numeric labels use Geist Mono with tabular-nums."
+    ]
+  },
+
+  "logo": {
+    "wordmarkViewBox": "0 0 96 32",
+    "rules": [
+      "No modification, distortion, recoloring, stretching, or alteration in any way.",
+      "No implied endorsement, sponsorship, or affiliation without prior written consent.",
+      "Licensed solely for editorial, media, and non-commercial promotional uses.",
+      "Scale proportionally only. Use the official asset zip for any variant."
+    ],
+    "minimumWidth": { "screen": 64, "print": "20mm" },
+    "clearSpace": "at least one logo-height on all sides",
+    "commercialUseContact": "hi@moonshot.ai"
+  },
+
+  "messaging": {
+    "officialDefinitionZh": "Kimi 是由月之暗面（Moonshot AI）研发的 AI 助手。我们致力于寻求将能源转化为智能的最优解。",
+    "officialDefinitionEn": "Kimi is an AI assistant developed by Moonshot AI.",
+    "tone": ["克制的", "专业的", "有温度的", "好奇", "先锋", "持续探索"],
+    "positioning": "一个与你共同演进的智能大脑",
+    "contacts": {
+      "legal": "legal@moonshot.ai",
+      "brandAndPartnerships": "hi@moonshot.ai",
+      "prAndComms": "globalpr@moonshot.ai"
+    }
+  }
+}
